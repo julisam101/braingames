@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Games - Round Three: Connections</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, #0f1220 0%, #1e263e 100%);
+            color: #ffffff;
+        }
+        .page {
+            width: min(760px, 100%);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .card {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.16);
+            border-radius: 24px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+            padding: 24px;
+            backdrop-filter: blur(12px);
+        }
+        h1 {
+            margin: 0 0 10px;
+            font-size: clamp(2rem, 3vw, 3.2rem);
+            text-align: center;
+            letter-spacing: 0.16em;
+        }
+        p {
+            margin: 0 0 18px;
+            text-align: center;
+            color: #d0d7f2;
+            line-height: 1.5;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+        .top-bar .hint {
+            flex: 1;
+            color: #b8c7ff;
+            font-size: 0.95rem;
+        }
+        .top-bar .counter {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 10px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            min-width: 140px;
+            text-align: center;
+            color: #ffd700;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .card-button {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.18);
+            border-radius: 18px;
+            padding: 20px 14px;
+            color: #f5f7ff;
+            font-size: 1rem;
+            font-weight: 800;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.1;
+        }
+        .card-button:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.14);
+        }
+        .card-button.selected {
+            border-color: #7ed957;
+            background: rgba(126, 217, 87, 0.16);
+        }
+        .card-button.correct {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.16);
+            color: #e8fcff;
+            cursor: default;
+        }
+        .card-button.wrong {
+            animation: shake 0.35s ease;
+            border-color: #ff5f5f;
+            background: rgba(255, 95, 95, 0.15);
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .action-button {
+            background: #ffd700;
+            color: #111;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 24px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .action-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+        }
+        .status {
+            text-align: center;
+            margin-top: 10px;
+            min-height: 1.4em;
+            color: #c7d2ff;
+            font-size: 1rem;
+        }
+        .status.success {
+            color: #7fff00;
+        }
+        .status.error {
+            color: #ff8c00;
+        }
+        .found-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .found-item {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 14px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            color: #d8e1ff;
+        }
+        .found-item span {
+            display: block;
+            margin-top: 6px;
+            color: #a7b4ff;
+            font-size: 0.85rem;
+        }
+        @media (max-width: 640px) {
+            .grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="card">
+            <div class="top-bar">
+                <div class="hint">Select 4 words that belong together. Find all 4 categories to unlock round four.</div>
+                <div class="counter" id="groupCounter">0 / 4 groups</div>
+            </div>
+            <h1>Round 3: Connections</h1>
+            <p>Pick the matching group of four words. Each correct set clears from the board and reveals a category.</p>
+            <div class="grid" id="wordGrid"></div>
+            <div class="button-row">
+                <button class="action-button" id="resetButton">Reset Selection</button>
+                <button class="action-button" id="nextButton" disabled>Next Round</button>
+            </div>
+            <div class="status" id="statusText">Ready to connect the words.</div>
+            <div class="found-list" id="foundList"></div>
+        </div>
+    </div>
+    <script>
+        const groups = [
+            { name: 'Travel', items: ['Passport', 'Checkpoint', 'Tourist', 'Luggage'] },
+            { name: 'Electronics', items: ['Battery', 'Circuit', 'Resistor', 'Capacitor'] },
+            { name: 'Flowers', items: ['Sunflower', 'Tulip', 'Rose', 'Daisy'] },
+            { name: 'Music', items: ['Piano', 'Guitar', 'Drums', 'Violin'] }
+        ];
+
+        const wordGrid = document.getElementById('wordGrid');
+        const statusText = document.getElementById('statusText');
+        const groupCounter = document.getElementById('groupCounter');
+        const resetButton = document.getElementById('resetButton');
+        const nextButton = document.getElementById('nextButton');
+        const foundList = document.getElementById('foundList');
+
+        const allWords = groups.flatMap(group => group.items);
+        let shuffledWords = [];
+        let selectedCards = [];
+        let solvedGroups = [];
+
+        function shuffle(array) {
+            return array
+                .map(value => ({ value, sort: Math.random() }))
+                .sort((a, b) => a.sort - b.sort)
+                .map(({ value }) => value);
+        }
+
+        function getGroupName(word) {
+            const group = groups.find(g => g.items.includes(word));
+            return group ? group.name : null;
+        }
+
+        function buildGrid() {
+            shuffledWords = shuffle(allWords);
+            wordGrid.innerHTML = '';
+            shuffledWords.forEach(word => {
+                const button = document.createElement('button');
+                button.className = 'card-button';
+                button.textContent = word;
+                button.dataset.word = word;
+                button.addEventListener('click', () => toggleSelection(button));
+                wordGrid.appendChild(button);
+            });
+        }
+
+        function toggleSelection(button) {
+            if (button.classList.contains('correct')) return;
+            if (button.classList.contains('selected')) {
+                button.classList.remove('selected');
+                selectedCards = selectedCards.filter(item => item !== button);
+            } else {
+                if (selectedCards.length === 4) return;
+                button.classList.add('selected');
+                selectedCards.push(button);
+            }
+            if (selectedCards.length === 4) {
+                checkSelection();
+            }
+        }
+
+        function checkSelection() {
+            const selectedWords = selectedCards.map(btn => btn.dataset.word);
+            const groupNames = selectedWords.map(getGroupName);
+            const uniqueGroupNames = [...new Set(groupNames)];
+
+            if (uniqueGroupNames.length === 1 && !solvedGroups.includes(uniqueGroupNames[0])) {
+                markCorrect(uniqueGroupNames[0]);
+            } else {
+                markWrong();
+            }
+        }
+
+        function markCorrect(groupName) {
+            solvedGroups.push(groupName);
+            selectedCards.forEach(btn => {
+                btn.classList.remove('selected');
+                btn.classList.add('correct');
+                btn.disabled = true;
+            });
+            statusText.textContent = `Nice! You found the “${groupName}” set.`;
+            statusText.className = 'status success';
+            selectedCards = [];
+            updateFoundList();
+            groupCounter.textContent = `${solvedGroups.length} / 4 groups`;
+            if (solvedGroups.length === 4) {
+                statusText.textContent = 'All groups found! Loading round four...';
+                nextButton.disabled = false;
+                setTimeout(() => {
+                    window.location.href = 'roundfour.html';
+                }, 1800);
+            }
+        }
+
+        function markWrong() {
+            statusText.textContent = 'That group does not match. Try another set.';
+            statusText.className = 'status error';
+            selectedCards.forEach(btn => btn.classList.add('wrong'));
+            setTimeout(() => {
+                selectedCards.forEach(btn => btn.classList.remove('selected', 'wrong'));
+                selectedCards = [];
+            }, 400);
+        }
+
+        function updateFoundList() {
+            foundList.innerHTML = '';
+            solvedGroups.forEach(groupName => {
+                const item = document.createElement('div');
+                item.className = 'found-item';
+                item.innerHTML = `<strong>${groupName}</strong><span>Found</span>`;
+                foundList.appendChild(item);
+            });
+        }
+
+        resetButton.addEventListener('click', () => {
+            selectedCards.forEach(btn => btn.classList.remove('selected', 'wrong'));
+            selectedCards = [];
+            statusText.textContent = 'Selection reset. Try another group.';
+            statusText.className = 'status';
+        });
+
+        nextButton.addEventListener('click', () => {
+            window.location.href = 'roundfour.html';
+        });
+
+        buildGrid();
+        groupCounter.textContent = `${solvedGroups.length} / 4 groups`;
+    </script>
+</body>
+</html>

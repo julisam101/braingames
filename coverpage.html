@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Games - Landing Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cinzel', serif;
+            background-color: white;
+            color: black;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            transition: background-color 1s ease, color 1s ease;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 50px;
+        }
+        .box {
+            position: absolute;
+            width: 300px;
+            height: 150px;
+            border: 2px solid black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .box:hover {
+            background-color: #f0f0f0;
+        }
+        .box h2 {
+            font-size: 1.5em;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Brain Games</h1>
+    <div id="startBox" class="box">
+        <h2>Start Today's Challenge</h2>
+    </div>
+    <div class="box">
+        <h2>More Games....</h2>
+    </div>
+    <script>
+        const h1 = document.querySelector('h1');
+        const startBox = document.getElementById('startBox');
+        const navigateToRoundOne = () => {
+            window.location.href = 'roundone.html';
+        };
+        startBox.addEventListener('click', navigateToRoundOne);
+        startBox.addEventListener('mousedown', navigateToRoundOne);
+        let direction = 1;
+        setInterval(() => {
+            h1.style.transform = `translateY(${direction * 10}px)`;
+            direction *= -1;
+        }, 300);
+
+        const boxes = document.querySelectorAll('.box');
+        boxes.forEach(box => {
+            // Set initial random position for each box
+            const x = Math.random() * (window.innerWidth - 300);
+            const y = Math.random() * (window.innerHeight - 150);
+            box.style.left = `${x}px`;
+            box.style.top = `${y}px`;
+            
+            // Add mouseenter listener to move on hover
+            box.addEventListener('mouseenter', () => {
+                const newX = Math.random() * (window.innerWidth - 300);
+                const newY = Math.random() * (window.innerHeight - 150);
+                box.style.left = `${newX}px`;
+                box.style.top = `${newY}px`;
+            });
+        });
+
+        const palette = [
+            { bg: '#2f80ed', text: '#ffffff' },
+            { bg: '#ff6ec7', text: '#ffffff' },
+            { bg: '#ff4d4d', text: '#ffffff' },
+            { bg: '#f9d342', text: '#111111' },
+            { bg: '#ff8a3d', text: '#111111' },
+            { bg: '#9b51e0', text: '#ffffff' },
+            { bg: '#6fcf97', text: '#111111' },
+            { bg: '#4b56d2', text: '#ffffff' },
+            { bg: '#b8d8ff', text: '#111111' },
+            { bg: '#ffd6ff', text: '#111111' },
+            { bg: '#ff9eea', text: '#111111' },
+            { bg: '#ffdf7e', text: '#111111' }
+        ];
+        let currentColor = 0;
+        document.body.style.backgroundColor = palette[currentColor].bg;
+        document.body.style.color = palette[currentColor].text;
+        setInterval(() => {
+            currentColor = (currentColor + 1) % palette.length;
+            document.body.style.backgroundColor = palette[currentColor].bg;
+            document.body.style.color = palette[currentColor].text;
+        }, 500);
+    </script>
+</body>
+</html>

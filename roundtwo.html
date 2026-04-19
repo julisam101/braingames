@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Brain Games - Hangman Western 3D</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #8B4513, #D2B48C);
+            color: #2C1810;
+            display: flex;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            border: 4px solid #2C1810;
+            padding: 24px;
+            background: linear-gradient(to bottom, #F5DEB3, #D2B48C);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 0 0 2px #8B4513;
+            position: relative;
+            text-align: center;
+        }
+        .wanted-poster {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #8B0000;
+            color: #FFD700;
+            padding: 8px 16px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            border: 3px solid #2C1810;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        h1 {
+            margin: 20px 0 8px;
+            font-size: 2.8rem;
+            letter-spacing: 0.15em;
+            color: #8B0000;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            font-weight: 900;
+        }
+        .subtitle {
+            margin: 0 0 28px;
+            font-size: 1.1rem;
+            color: #654321;
+            letter-spacing: 0.08em;
+        }
+        .hangman-display {
+            font-size: 1.3rem;
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+            color: #2C1810;
+            background: rgba(255,255,255,0.8);
+            border: 2px dashed #2C1810;
+            padding: 0;
+            margin: 0 0 24px;
+            min-height: 320px;
+            white-space: pre;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+        #canvas3d {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .game-info {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .info-card {
+            background: rgba(255,255,255,0.6);
+            border: 2px solid #2C1810;
+            padding: 14px;
+            font-weight: 700;
+        }
+        .word-display {
+            font-size: 2.4rem;
+            letter-spacing: 0.3em;
+            margin: 32px 0;
+            font-weight: 900;
+            color: #2C1810;
+            font-family: 'Courier New', monospace;
+            min-height: 3.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.8);
+            border: 3px dashed #2C1810;
+            padding: 20px;
+            word-spacing: 0.2em;
+        }
+        .letters-used {
+            margin: 20px 0;
+            min-height: 3rem;
+        }
+        .letters-used p {
+            margin: 0 0 8px;
+            font-weight: 700;
+            color: #654321;
+        }
+        .letter-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+            gap: 6px;
+            margin-bottom: 28px;
+            max-width: 100%;
+        }
+        .letter-btn {
+            padding: 8px 4px;
+            border: 2px solid #2C1810;
+            background: #F5DEB3;
+            color: #2C1810;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s, color 0.2s;
+            font-size: 0.85rem;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .letter-btn:hover:not(:disabled) {
+            transform: scale(1.08);
+            background: #FFD700;
+        }
+        .letter-btn:disabled {
+            background: #999;
+            color: #666;
+            cursor: default;
+            opacity: 0.5;
+        }
+        .status-message {
+            font-size: 1.3rem;
+            font-weight: 700;
+            min-height: 2rem;
+            margin: 16px 0;
+            color: #2C1810;
+        }
+        .action-button {
+            background: #8B0000;
+            color: #FFD700;
+            border: 3px solid #2C1810;
+            padding: 16px 28px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            cursor: pointer;
+            letter-spacing: 0.08em;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 12px;
+            display: none;
+        }
+        .action-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+        body.won {
+            background: linear-gradient(135deg, #228B22, #90EE90);
+        }
+        #celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            animation: celebrate 0.6s ease-out;
+            z-index: 10;
+            pointer-events: none;
+        }
+        @keyframes celebrate {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -150%) scale(1.5);
+            }
+        }
+        @media (max-width: 700px) {
+            .container {
+                padding: 16px;
+                border: 3px solid #2C1810;
+            }
+            h1 {
+                font-size: 2rem;
+                margin: 12px 0 6px;
+            }
+            .word-display {
+                font-size: 1.8rem;
+                letter-spacing: 0.2em;
+                margin: 20px 0;
+                min-height: 2.4rem;
+            }
+            .hangman-display {
+                font-size: 1rem;
+                min-height: 140px;
+            }
+            .game-info {
+                gap: 12px;
+                margin-bottom: 16px;
+            }
+            .action-button {
+                padding: 12px 20px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="wanted-poster">🤠 WANTED 🤠</div>
+        <h1>HANGMAN</h1>
+        <p class="subtitle">Guess the word, partner!</p>
+
+        <div class="hangman-display" id="hangmanDisplay">
+            <canvas id="canvas3d"></canvas>
+        </div>
+
+        <div class="game-info">
+            <div class="info-card">
+                Wrong Guesses: <span id="wrongCount">0</span>/8
+            </div>
+            <div class="info-card">
+                Letters Left: <span id="lettersLeft">26</span>
+            </div>
+        </div>
+
+        <div class="word-display" id="wordDisplay">_ _ _ _ _</div>
+
+        <div class="letters-used">
+            <p>Guessed Letters:</p>
+            <div id="guessedLetters"></div>
+        </div>
+
+        <div class="letter-buttons" id="letterButtons"></div>
+
+        <div class="status-message" id="statusMessage">Pick a letter, cowboy!</div>
+
+        <button class="action-button" id="newGameButton">New Game</button>
+        <button class="action-button" id="nextButton" disabled>Next Round 🤠</button>
+    </div>
+
+    <script>
+        // Three.js Setup
+        let scene, camera, renderer;
+        let gallows, hangmanParts = {};
+
+        function initThreeJS() {
+            const canvas = document.getElementById('canvas3d');
+            const width = canvas.parentElement.clientWidth;
+            const height = 320;
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xF5DEB3);
+
+            camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            camera.position.set(0, 2, 5);
+
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(width, height);
+            renderer.shadowMap.enabled = true;
+
+            // Lighting
+            const light = new THREE.DirectionalLight(0xffffff, 0.8);
+            light.position.set(5, 10, 5);
+            light.castShadow = true;
+            light.shadow.mapSize.width = 2048;
+            light.shadow.mapSize.height = 2048;
+            scene.add(light);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            // Ground
+            const groundGeom = new THREE.BoxGeometry(8, 0.2, 2);
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const ground = new THREE.Mesh(groundGeom, groundMat);
+            ground.position.y = -1.5;
+            ground.castShadow = true;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Create Gallows
+            createGallows();
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                const newWidth = canvas.parentElement.clientWidth;
+                const newHeight = 320;
+                renderer.setSize(newWidth, newHeight);
+                camera.aspect = newWidth / newHeight;
+                camera.updateProjectionMatrix();
+            });
+
+            animate();
+        }
+
+        function createGallows() {
+            gallows = new THREE.Group();
+
+            // Main post
+            const postGeom = new THREE.CylinderGeometry(0.15, 0.15, 4, 16);
+            const woodMat = new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0.7 });
+            const post = new THREE.Mesh(postGeom, woodMat);
+            post.position.set(-1.5, 0.5, 0);
+            post.castShadow = true;
+            post.receiveShadow = true;
+            gallows.add(post);
+
+            // Top beam
+            const beamGeom = new THREE.CylinderGeometry(0.12, 0.12, 2.5, 16);
+            const beam = new THREE.Mesh(beamGeom, woodMat);
+            beam.rotation.z = Math.PI / 2;
+            beam.position.set(0, 2.7, 0);
+            beam.castShadow = true;
+            beam.receiveShadow = true;
+            gallows.add(beam);
+
+            // Rope
+            const ropeGeom = new THREE.CylinderGeometry(0.04, 0.04, 1.8, 8);
+            const ropeMat = new THREE.MeshStandardMaterial({ color: 0x8B7355, roughness: 0.8 });
+            const rope = new THREE.Mesh(ropeGeom, ropeMat);
+            rope.position.set(1.2, 0.8, 0);
+            rope.castShadow = true;
+            rope.receiveShadow = true;
+            gallows.add(rope);
+
+            // Create hangman parts (all hidden initially)
+            createHangmanParts();
+
+            scene.add(gallows);
+        }
+
+        function createHangmanParts() {
+            const skinMat = new THREE.MeshStandardMaterial({ color: 0xFFDBBD, roughness: 0.5 });
+
+            // Head
+            const headGeom = new THREE.SphereGeometry(0.3, 32, 32);
+            hangmanParts.head = new THREE.Mesh(headGeom, skinMat);
+            hangmanParts.head.position.set(1.2, 0.5, 0);
+            hangmanParts.head.castShadow = true;
+            hangmanParts.head.receiveShadow = true;
+            hangmanParts.head.visible = false;
+            gallows.add(hangmanParts.head);
+
+            // Body
+            const bodyGeom = new THREE.CylinderGeometry(0.2, 0.25, 1, 16);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xFF6B6B, roughness: 0.6 });
+            hangmanParts.body = new THREE.Mesh(bodyGeom, bodyMat);
+            hangmanParts.body.position.set(1.2, -0.3, 0);
+            hangmanParts.body.castShadow = true;
+            hangmanParts.body.receiveShadow = true;
+            hangmanParts.body.visible = false;
+            gallows.add(hangmanParts.body);
+
+            // Left Arm
+            const armGeom = new THREE.CylinderGeometry(0.08, 0.08, 0.8, 12);
+            const armMat = new THREE.MeshStandardMaterial({ color: 0xFFDBBD, roughness: 0.5 });
+            hangmanParts.leftArm = new THREE.Mesh(armGeom, armMat);
+            hangmanParts.leftArm.rotation.z = Math.PI / 3;
+            hangmanParts.leftArm.position.set(0.7, 0.2, 0);
+            hangmanParts.leftArm.castShadow = true;
+            hangmanParts.leftArm.receiveShadow = true;
+            hangmanParts.leftArm.visible = false;
+            gallows.add(hangmanParts.leftArm);
+
+            // Right Arm
+            hangmanParts.rightArm = new THREE.Mesh(armGeom, armMat);
+            hangmanParts.rightArm.rotation.z = -Math.PI / 3;
+            hangmanParts.rightArm.position.set(1.7, 0.2, 0);
+            hangmanParts.rightArm.castShadow = true;
+            hangmanParts.rightArm.receiveShadow = true;
+            hangmanParts.rightArm.visible = false;
+            gallows.add(hangmanParts.rightArm);
+
+            // Left Leg
+            const legGeom = new THREE.CylinderGeometry(0.08, 0.08, 0.9, 12);
+            hangmanParts.leftLeg = new THREE.Mesh(legGeom, armMat);
+            hangmanParts.leftLeg.position.set(1.0, -1.2, 0);
+            hangmanParts.leftLeg.castShadow = true;
+            hangmanParts.leftLeg.receiveShadow = true;
+            hangmanParts.leftLeg.visible = false;
+            gallows.add(hangmanParts.leftLeg);
+
+            // Right Leg
+            hangmanParts.rightLeg = new THREE.Mesh(legGeom, armMat);
+            hangmanParts.rightLeg.position.set(1.4, -1.2, 0);
+            hangmanParts.rightLeg.castShadow = true;
+            hangmanParts.rightLeg.receiveShadow = true;
+            hangmanParts.rightLeg.visible = false;
+            gallows.add(hangmanParts.rightLeg);
+        }
+
+        function updateHangman3D() {
+            const partsToShow = ['head', 'body', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg'];
+            for (let i = 0; i < wrongGuesses && i < partsToShow.length; i++) {
+                hangmanParts[partsToShow[i]].visible = true;
+                hangmanParts[partsToShow[i]].rotation.x = Math.sin(Date.now() * 0.001) * 0.05;
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Gentle rotation
+            if (gallows) {
+                gallows.rotation.y += 0.0005;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Game Logic
+        const WORDS = [
+            'SHERIFF', 'COWBOY', 'OUTLAW', 'SALOON', 'SADDLE',
+            'RANCH', 'PRAIRIE', 'LASSO', 'STABLE', 'WANTED',
+            'DESERT', 'BULLET', 'GUNSLINGER', 'POSSE', 'HORSE',
+            'WHISKEY', 'BOOTS', 'SPUR', 'PISTOL', 'RODEO',
+            'DUEL', 'HOLSTER', 'BANDIT', 'WAGON', 'CANYON'
+        ];
+
+        let word = '';
+        let guessedLetters = [];
+        let wrongGuesses = 0;
+        const MAX_WRONG = 8;
+
+        const wordDisplay = document.getElementById('wordDisplay');
+        const statusMessage = document.getElementById('statusMessage');
+        const newGameButton = document.getElementById('newGameButton');
+        const nextButton = document.getElementById('nextButton');
+        const letterButtons = document.getElementById('letterButtons');
+        const guessedLettersDiv = document.getElementById('guessedLetters');
+        const wrongCountSpan = document.getElementById('wrongCount');
+        const lettersLeftSpan = document.getElementById('lettersLeft');
+
+        function createLetterButtons() {
+            letterButtons.innerHTML = '';
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            letters.forEach(letter => {
+                const button = document.createElement('button');
+                button.textContent = letter;
+                button.className = 'letter-btn';
+                button.disabled = guessedLetters.includes(letter);
+                button.addEventListener('click', () => guessLetter(letter, button));
+                letterButtons.appendChild(button);
+            });
+        }
+
+        function updateDisplay() {
+            const display = word.split('').map(letter => 
+                guessedLetters.includes(letter) ? letter : '_'
+            ).join(' ');
+            wordDisplay.textContent = display;
+            
+            const guessedStr = guessedLetters.join(', ');
+            guessedLettersDiv.textContent = guessedStr || 'None yet';
+            
+            wrongCountSpan.textContent = wrongGuesses;
+            lettersLeftSpan.textContent = 26 - guessedLetters.length;
+            updateHangman3D();
+        }
+
+        function guessLetter(letter, button) {
+            if (guessedLetters.includes(letter)) return;
+
+            guessedLetters.push(letter);
+            button.disabled = true;
+
+            if (!word.includes(letter)) {
+                wrongGuesses++;
+            }
+
+            updateDisplay();
+            checkGameStatus();
+        }
+
+        function checkGameStatus() {
+            const wordComplete = word.split('').every(letter => guessedLetters.includes(letter));
+
+            if (wordComplete) {
+                celebrate();
+                statusMessage.textContent = '🎉 YEEHAW! You got it, partner! 🎉';
+                statusMessage.style.color = '#228B22';
+                disableAllLetters();
+                document.body.className = 'won';
+                setTimeout(() => {
+                    window.location.href = 'roundthree.html';
+                }, 2000);
+            } else if (wrongGuesses >= MAX_WRONG) {
+                statusMessage.textContent = `💀 Game Over! The word was: ${word}`;
+                statusMessage.style.color = '#8B0000';
+                disableAllLetters();
+                document.body.className = 'wrong';
+                setTimeout(() => {
+                    startNewGame();
+                }, 2000);
+            }
+        }
+
+        function disableAllLetters() {
+            const buttons = document.querySelectorAll('.letter-btn');
+            buttons.forEach(btn => btn.disabled = true);
+        }
+
+        function celebrate() {
+            const emojis = ['🤠', '⭐', '🔫', '🐴', '💰'];
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const el = document.createElement('div');
+                    el.id = 'celebration';
+                    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    el.style.left = Math.random() * 80 + 10 + '%';
+                    document.body.appendChild(el);
+                    setTimeout(() => el.remove(), 600);
+                }, i * 100);
+            }
+        }
+
+        function startNewGame() {
+            word = WORDS[Math.floor(Math.random() * WORDS.length)];
+            guessedLetters = [];
+            wrongGuesses = 0;
+            statusMessage.textContent = 'Pick a letter, cowboy!';
+            statusMessage.style.color = '#2C1810';
+            document.body.className = '';
+            nextButton.disabled = true;
+            newGameButton.style.display = 'none';
+            createLetterButtons();
+            updateDisplay();
+        }
+
+        newGameButton.addEventListener('click', startNewGame);
+        nextButton.addEventListener('click', () => {
+            window.location.href = 'roundthree.html';
+        });
+
+        initThreeJS();
+        startNewGame();
+    </script>
+</body>
+</html>
