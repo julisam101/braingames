@@ -216,6 +216,22 @@
             return { problem: `${a} ${op} ${b}`, answer };
         }
 
+        function startCountdown() {
+            submitButton.style.display = 'none';
+            answerInput.style.display = 'none';
+            problemEl.textContent = 'Ready...';
+            statusText.textContent = '';
+            
+            setTimeout(() => {
+                problemEl.textContent = 'Set...';
+            }, 3000);
+            
+            setTimeout(() => {
+                problemEl.textContent = 'Go!';
+                startGame();
+            }, 6000);
+        }
+
         function startGame() {
             score = 0;
             timeLeft = 60;
@@ -223,6 +239,8 @@
             timerEl.textContent = timeLeft;
             statusText.textContent = '';
             nextButton.disabled = true;
+            submitButton.style.display = 'inline-block';
+            answerInput.style.display = 'inline-block';
             submitButton.disabled = false;
             answerInput.disabled = false;
             answerInput.focus();
@@ -270,14 +288,16 @@
             problemEl.textContent = 'Time\'s up!';
             answerInput.disabled = true;
             submitButton.disabled = true;
-            statusText.textContent = `Final Score: ${score} correct answers!`;
+            statusText.textContent = `Final Score: ${score} correct answers! Advancing to Round 4...`;
             statusText.className = 'status success';
-            nextButton.disabled = false;
+            setTimeout(() => {
+                window.location.href = 'roundfour.html';
+            }, 2000);
         }
 
         submitButton.addEventListener('click', () => {
             if (!timerId) {
-                startGame();
+                startCountdown();
             } else {
                 checkAnswer();
             }
@@ -286,7 +306,7 @@
         answerInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 if (!timerId) {
-                    startGame();
+                    startCountdown();
                 } else {
                     checkAnswer();
                 }
