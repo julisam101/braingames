@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brain Games - Round Three: Connections</title>
+    <title>Brain Games - Round Three: Math Sprint</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -28,17 +28,19 @@
             box-shadow: 0 24px 60px rgba(179, 150, 195, 0.25);
             padding: 24px;
             backdrop-filter: blur(12px);
+            text-align: center;
         }
         h1 {
             margin: 0 0 10px;
             font-size: clamp(2rem, 3vw, 3.2rem);
             text-align: center;
             letter-spacing: 0.16em;
+            color: #5a315a;
         }
         p {
             margin: 0 0 18px;
             text-align: center;
-            color: #d0d7f2;
+            color: #5f4a63;
             line-height: 1.5;
         }
         .top-bar {
@@ -64,89 +66,44 @@
             text-align: center;
             color: #814d7f;
         }
-        .attempts {
-            margin-top: 8px;
+        .timer {
             background: rgba(255, 238, 244, 0.85);
             border-radius: 999px;
-            padding: 6px 10px;
+            padding: 10px 14px;
             color: #8b3a72;
-            font-size: 0.85rem;
-            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
             border: 1px solid rgba(196, 167, 222, 0.35);
         }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(120px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .grid.bloom {
-            animation: bloom 0.55s ease-out;
-        }
-        @keyframes bloom {
-            0% {
-                transform: scale(0.96);
-                opacity: 0.75;
-                filter: blur(1px);
-            }
-            50% {
-                transform: scale(1.02);
-                opacity: 1;
-                filter: blur(0);
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-                filter: blur(0);
-            }
-        }
-        .card-button {
-            background: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(192, 158, 206, 0.7);
-            border-radius: 18px;
-            padding: 20px 14px;
+        .problem {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 20px 0;
             color: #4b2f56;
-            font-size: 1rem;
-            font-weight: 800;
+        }
+        .answer-input {
+            width: 200px;
+            padding: 12px;
+            border: 2px solid rgba(192, 158, 206, 0.7);
+            border-radius: 12px;
+            font-size: 1.2rem;
             text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-            min-height: 90px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1.1;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+            background: rgba(255, 255, 255, 0.9);
+            color: #4b2f56;
+            outline: none;
+            margin: 0 auto;
+            display: block;
         }
-        .card-button:hover {
-            transform: translateY(-2px);
-            background: rgba(255,255,255,0.14);
-        }
-        .card-button.selected {
+        .answer-input:focus {
             border-color: #ffb6d7;
-            background: rgba(255, 182, 215, 0.35);
-        }
-        .card-button.correct {
-            opacity: 0.2;
-            transform: scale(0.95);
-            pointer-events: none;
-        }
-        .card-button.wrong {
-            animation: shake 0.35s ease;
-            border-color: #ff8aa1;
-            background: rgba(255, 138, 161, 0.24);
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-6px); }
-            40%, 80% { transform: translateX(6px); }
         }
         .button-row {
             display: flex;
             justify-content: center;
             gap: 16px;
             flex-wrap: wrap;
-            margin-bottom: 14px;
+            margin-top: 20px;
         }
         .action-button {
             background: #ffd700;
@@ -169,7 +126,7 @@
         }
         .status {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 18px;
             min-height: 1.4em;
             color: #6f496b;
             font-size: 1rem;
@@ -180,29 +137,18 @@
         .status.error {
             color: #ff8c00;
         }
-        .found-list {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-            margin-top: 14px;
-        }
-        .found-item {
-            background: rgba(255, 223, 238, 0.7);
-            border: 1px solid rgba(220, 161, 214, 0.8);
-            border-radius: 14px;
-            padding: 10px 12px;
-            font-size: 0.95rem;
-            color: #5f315c;
-        }
-        .found-item span {
-            display: block;
-            margin-top: 6px;
-            color: #8e5b82;
-            font-size: 0.85rem;
+        .score {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 10px;
+            color: #5a315a;
         }
         @media (max-width: 640px) {
-            .grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+            .problem {
+                font-size: 2rem;
+            }
+            .answer-input {
+                width: 150px;
             }
         }
     </style>
@@ -211,236 +157,145 @@
     <div class="page">
         <div class="card">
             <div class="top-bar">
-                <div class="hint">Pick the blooming groups of four. Clear each bouquet and watch the meadow fill with spring color.</div>
-                <div>
-                    <div class="counter" id="groupCounter">0 / 4 bouquets</div>
-                    <div class="attempts" id="attemptCounter">3 tries left</div>
-                </div>
+                <div class="hint">Solve as many math problems as you can in 60 seconds!</div>
+                <div class="timer" id="timer">60</div>
             </div>
-            <h1>Round 3: Spring Connections 🌸</h1>
-            <p>Find the matching word groups that belong together. Each correct set vanishes like petals in the breeze.</p>
-            <div class="grid" id="wordGrid"></div>
+            <h1>Round 3: Math Sprint</h1>
+            <p>Answer simple addition, subtraction, multiplication, and division problems.</p>
+            <div class="problem" id="problem">Ready?</div>
+            <input type="number" class="answer-input" id="answerInput" placeholder="Your answer">
             <div class="button-row">
-                <button class="action-button" id="resetButton">Reset Selection</button>
+                <button class="action-button" id="submitButton">Submit Answer</button>
                 <button class="action-button" id="nextButton" disabled>Next Round</button>
             </div>
-            <div class="status" id="statusText">Ready to bloom through the spring puzzle.</div>
-            <div class="found-list" id="foundList"></div>
+            <div class="score" id="score">Score: 0</div>
+            <div class="status" id="statusText">Click submit to start!</div>
         </div>
     </div>
-    <script type="module">
-        const wordGrid = document.getElementById('wordGrid');
-        const statusText = document.getElementById('statusText');
-        const groupCounter = document.getElementById('groupCounter');
-        const attemptCounter = document.getElementById('attemptCounter');
-        const resetButton = document.getElementById('resetButton');
+    <script>
+        const problemEl = document.getElementById('problem');
+        const answerInput = document.getElementById('answerInput');
+        const submitButton = document.getElementById('submitButton');
         const nextButton = document.getElementById('nextButton');
-        const foundList = document.getElementById('foundList');
+        const scoreEl = document.getElementById('score');
+        const statusText = document.getElementById('statusText');
+        const timerEl = document.getElementById('timer');
 
-        const MAX_ATTEMPTS = 3;
-        let groups = [];
-        let shuffledWords = [];
-        let selectedCards = [];
-        let solvedGroups = [];
-        let attemptsLeft = MAX_ATTEMPTS;
+        let score = 0;
+        let timeLeft = 60;
+        let timerId;
+        let currentProblem = null;
 
-        function shuffle(array) {
-            return array
-                .map(value => ({ value, sort: Math.random() }))
-                .sort((a, b) => a.sort - b.sort)
-                .map(({ value }) => value);
-        }
+        function generateProblem() {
+            const difficulty = Math.floor(score / 5);
+            const maxNum = 10 + difficulty * 10; // Starts at 10, increases by 10 every 5 correct
+            const operations = ['+', '-', '*', '/'];
+            const op = operations[Math.floor(Math.random() * operations.length)];
+            let a, b;
 
-        async function fetchRandomWord() {
-            try {
-                const response = await fetch('https://random-words-api.vercel.app/word');
-                const data = await response.json();
-                if (Array.isArray(data) && data[0] && data[0].word) {
-                    return data[0].word.trim();
-                }
-            } catch (error) {
-                console.warn('Word API fetch failed', error);
-            }
-            return null;
-        }
-
-        function buildLengthGroups(words) {
-            const buckets = words.reduce((acc, word) => {
-                const length = word.length;
-                if (length < 3 || length > 10) return acc;
-                acc[length] = acc[length] || [];
-                if (!acc[length].includes(word)) acc[length].push(word);
-                return acc;
-            }, {});
-
-            const validBuckets = Object.entries(buckets)
-                .filter(([, list]) => list.length >= 4)
-                .sort((a, b) => b[1].length - a[1].length)
-                .slice(0, 4);
-
-            if (validBuckets.length < 4) return null;
-
-            return validBuckets.map(([length, list]) => ({
-                name: `${length}-letter bouquet`,
-                items: shuffle(list).slice(0, 4)
-            }));
-        }
-
-        async function prepareGroups() {
-            const pool = new Set();
-            let attempts = 0;
-            while (attempts < 60 && pool.size < 32) {
-                const word = await fetchRandomWord();
-                attempts += 1;
-                if (!word) continue;
-                if (!/^[A-Za-z]+$/.test(word)) continue;
-                pool.add(word);
+            switch (op) {
+                case '+':
+                    a = Math.floor(Math.random() * maxNum) + 1;
+                    b = Math.floor(Math.random() * maxNum) + 1;
+                    break;
+                case '-':
+                    a = Math.floor(Math.random() * maxNum) + maxNum / 2;
+                    b = Math.floor(Math.random() * a) + 1;
+                    break;
+                case '*':
+                    a = Math.floor(Math.random() * (maxNum / 2)) + 1;
+                    b = Math.floor(Math.random() * (maxNum / 2)) + 1;
+                    break;
+                case '/':
+                    b = Math.floor(Math.random() * 9) + 2;
+                    a = b * (Math.floor(Math.random() * (maxNum / 2)) + 1);
+                    break;
             }
 
-            const wordList = Array.from(pool);
-            const dynamicGroups = buildLengthGroups(wordList);
-            if (dynamicGroups) {
-                return dynamicGroups;
-            }
-
-            return [
-                { name: 'Flower bouquet', items: ['Sunflower', 'Tulip', 'Rose', 'Daisy'] },
-                { name: 'Spring scents', items: ['Pollen', 'Petal', 'Meadow', 'Blossom'] },
-                { name: 'Garden tools', items: ['Shovel', 'Rake', 'Pruner', 'Hoe'] },
-                { name: 'Sunny colors', items: ['Coral', 'Mint', 'Lilac', 'Peach'] }
-            ];
+            const answer = eval(`${a} ${op} ${b}`);
+            return { problem: `${a} ${op} ${b}`, answer };
         }
 
-        function getGroupName(word) {
-            const group = groups.find(g => g.items.includes(word));
-            return group ? group.name : null;
-        }
-
-        function updateAttemptCounter() {
-            attemptCounter.textContent = `${attemptsLeft} ${attemptsLeft === 1 ? 'try' : 'tries'} left`;
-        }
-
-        async function refreshBoard() {
-            solvedGroups = [];
-            selectedCards = [];
-            attemptsLeft = MAX_ATTEMPTS;
-            updateAttemptCounter();
-            foundList.innerHTML = '';
-            groupCounter.textContent = `${solvedGroups.length} / 4 bouquets`;
+        function startGame() {
+            score = 0;
+            timeLeft = 60;
+            scoreEl.textContent = `Score: ${score}`;
+            timerEl.textContent = timeLeft;
+            statusText.textContent = '';
             nextButton.disabled = true;
-            statusText.textContent = 'Too many missed blooms — the board changes!';
-            statusText.className = 'status error';
-            groups = await prepareGroups();
-            buildGrid();
-            wordGrid.classList.remove('bloom');
-            void wordGrid.offsetWidth;
-            wordGrid.classList.add('bloom');
-            setTimeout(() => wordGrid.classList.remove('bloom'), 550);
-        }
+            submitButton.disabled = false;
+            answerInput.disabled = false;
+            answerInput.focus();
 
-        function buildGrid() {
-            const allWords = groups.flatMap(group => group.items);
-            shuffledWords = shuffle(allWords);
-            wordGrid.innerHTML = '';
-            shuffledWords.forEach(word => {
-                const button = document.createElement('button');
-                button.className = 'card-button';
-                button.textContent = word;
-                button.dataset.word = word;
-                button.addEventListener('click', () => toggleSelection(button));
-                wordGrid.appendChild(button);
-            });
-        }
-
-        function toggleSelection(button) {
-            if (button.classList.contains('correct')) return;
-            if (button.classList.contains('selected')) {
-                button.classList.remove('selected');
-                selectedCards = selectedCards.filter(item => item !== button);
-            } else {
-                if (selectedCards.length === 4) return;
-                button.classList.add('selected');
-                selectedCards.push(button);
-            }
-            if (selectedCards.length === 4) {
-                checkSelection();
-            }
-        }
-
-        function checkSelection() {
-            const selectedWords = selectedCards.map(btn => btn.dataset.word);
-            const groupNames = selectedWords.map(getGroupName);
-            const uniqueGroupNames = [...new Set(groupNames)];
-
-            if (uniqueGroupNames.length === 1 && !solvedGroups.includes(uniqueGroupNames[0])) {
-                markCorrect(uniqueGroupNames[0]);
-            } else {
-                markWrong();
-            }
-        }
-
-        function markCorrect(groupName) {
-            solvedGroups.push(groupName);
-            selectedCards.forEach(btn => btn.remove());
-            statusText.textContent = `Nice! You found the “${groupName}” bouquet.`;
-            statusText.className = 'status success';
-            selectedCards = [];
-            attemptsLeft = MAX_ATTEMPTS;
-            updateAttemptCounter();
-            updateFoundList();
-            groupCounter.textContent = `${solvedGroups.length} / 4 bouquets`;
-            if (solvedGroups.length === 4) {
-                statusText.textContent = 'All bouquets found! Loading round four...';
-                nextButton.disabled = false;
-                setTimeout(() => {
-                    window.location.href = 'roundfour.html';
-                }, 1800);
-            }
-        }
-
-        function markWrong() {
-            attemptsLeft -= 1;
-            updateAttemptCounter();
-            statusText.textContent = attemptsLeft > 0 ? 'That selection does not bloom. Try again.' : 'No more tries — refreshing the board.';
-            statusText.className = 'status error';
-            selectedCards.forEach(btn => btn.classList.add('wrong'));
-            setTimeout(async () => {
-                selectedCards.forEach(btn => btn.classList.remove('selected', 'wrong'));
-                selectedCards = [];
-                if (attemptsLeft <= 0) {
-                    await refreshBoard();
+            timerId = setInterval(() => {
+                timeLeft -= 1;
+                timerEl.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
                 }
-            }, 400);
+            }, 1000);
+
+            nextProblem();
         }
 
-        function updateFoundList() {
-            foundList.innerHTML = '';
-            solvedGroups.forEach(groupName => {
-                const item = document.createElement('div');
-                item.className = 'found-item';
-                item.innerHTML = `<strong>${groupName}</strong><span>Found</span>`;
-                foundList.appendChild(item);
-            });
+        function nextProblem() {
+            currentProblem = generateProblem();
+            problemEl.textContent = currentProblem.problem;
+            answerInput.value = '';
+            answerInput.focus();
         }
 
-        resetButton.addEventListener('click', () => {
-            selectedCards.forEach(btn => btn.classList.remove('selected', 'wrong'));
-            selectedCards = [];
-            statusText.textContent = 'Selection reset. Try another bouquet.';
-            statusText.className = 'status';
+        function checkAnswer() {
+            const userAnswer = parseFloat(answerInput.value);
+            if (userAnswer === currentProblem.answer) {
+                score += 1;
+                scoreEl.textContent = `Score: ${score}`;
+                statusText.textContent = 'Correct!';
+                statusText.className = 'status success';
+            } else {
+                timeLeft = Math.max(0, timeLeft - 5);
+                timerEl.textContent = timeLeft;
+                statusText.textContent = `Wrong! Answer was ${currentProblem.answer}`;
+                statusText.className = 'status error';
+            }
+            setTimeout(() => {
+                nextProblem();
+                statusText.textContent = '';
+                statusText.className = 'status';
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(timerId);
+            problemEl.textContent = 'Time\'s up!';
+            answerInput.disabled = true;
+            submitButton.disabled = true;
+            statusText.textContent = `Final Score: ${score} correct answers!`;
+            statusText.className = 'status success';
+            nextButton.disabled = false;
+        }
+
+        submitButton.addEventListener('click', () => {
+            if (!timerId) {
+                startGame();
+            } else {
+                checkAnswer();
+            }
+        });
+
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (!timerId) {
+                    startGame();
+                } else {
+                    checkAnswer();
+                }
+            }
         });
 
         nextButton.addEventListener('click', () => {
             window.location.href = 'roundfour.html';
         });
-
-        (async () => {
-            statusText.textContent = 'Growing your spring connections with the word API...';
-            groups = await prepareGroups();
-            buildGrid();
-            groupCounter.textContent = `${solvedGroups.length} / 4 bouquets`;
-            updateAttemptCounter();
-        })();
     </script>
 </body>
 </html>
