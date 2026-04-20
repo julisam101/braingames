@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Brain Games - Round Five: Riddle Finale</title>
+	<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+	<style>
+		body {
+			margin: 0;
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-family: 'Cinzel', serif;
+			background: radial-gradient(circle at 20% 20%, #f8f4ff 0%, #e7f1ff 45%, #f6ecff 100%);
+			color: #2f2a29;
+		}
+
+		.page {
+			width: min(900px, 100%);
+			padding: 20px;
+			box-sizing: border-box;
+		}
+
+		.card {
+			background: rgba(255, 255, 255, 0.92);
+			border: 3px solid rgba(126, 98, 173, 0.45);
+			border-radius: 22px;
+			box-shadow: 0 18px 45px rgba(86, 65, 118, 0.24);
+			padding: 24px;
+			backdrop-filter: blur(8px);
+		}
+
+		h1 {
+			margin: 0 0 10px;
+			font-size: clamp(2rem, 3vw, 3rem);
+			text-align: center;
+			letter-spacing: 0.14em;
+			color: #5f3f87;
+		}
+
+		.subtitle {
+			margin: 0 0 16px;
+			text-align: center;
+			color: #5f4a63;
+			line-height: 1.5;
+		}
+
+		.top-bar {
+			display: flex;
+			justify-content: space-between;
+			gap: 12px;
+			flex-wrap: wrap;
+			margin-bottom: 14px;
+			font-weight: 700;
+			color: #593b80;
+		}
+
+		.riddle-box {
+			background: #fff;
+			border: 2px dashed rgba(126, 98, 173, 0.45);
+			border-radius: 14px;
+			min-height: 120px;
+			padding: 16px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+			line-height: 1.6;
+			font-size: clamp(1rem, 1.8vw, 1.2rem);
+			margin-bottom: 14px;
+		}
+
+		.answer-row {
+			display: grid;
+			grid-template-columns: 1fr auto;
+			gap: 10px;
+			margin-bottom: 12px;
+		}
+
+		input[type="text"] {
+			padding: 12px 14px;
+			border-radius: 10px;
+			border: 2px solid rgba(126, 98, 173, 0.4);
+			font-size: 1rem;
+			font-family: inherit;
+			outline: none;
+		}
+
+		input[type="text"]:focus {
+			border-color: #7e62ad;
+			box-shadow: 0 0 0 3px rgba(126, 98, 173, 0.2);
+		}
+
+		button {
+			border: none;
+			border-radius: 10px;
+			padding: 11px 16px;
+			font-family: inherit;
+			font-size: 0.95rem;
+			font-weight: 700;
+			cursor: pointer;
+			background: linear-gradient(135deg, #6f539d 0%, #8e5f9f 100%);
+			color: #fff;
+			transition: transform 0.15s ease, filter 0.2s ease;
+		}
+
+		button:hover {
+			transform: translateY(-1px);
+			filter: brightness(1.06);
+		}
+
+		button:disabled {
+			opacity: 0.55;
+			cursor: not-allowed;
+			transform: none;
+			filter: none;
+		}
+
+		.controls {
+			display: flex;
+			justify-content: center;
+			gap: 10px;
+			flex-wrap: wrap;
+		}
+
+		.status {
+			min-height: 26px;
+			text-align: center;
+			margin: 8px 0 14px;
+			font-weight: 700;
+		}
+
+		.status.success {
+			color: #157347;
+		}
+
+		.status.error {
+			color: #b02a37;
+		}
+
+		.answer-reveal {
+			text-align: center;
+			margin-bottom: 12px;
+			color: #4b3f6b;
+			font-weight: 700;
+			min-height: 24px;
+		}
+
+		@media (max-width: 700px) {
+			.answer-row {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="page">
+		<div class="card">
+			<h1>Round Five</h1>
+			<p class="subtitle">Riddle Finale: keep trying riddles until you get one correct to pass.</p>
+
+			<div class="top-bar">
+				<span id="progressText">Riddles Attempted: 0</span>
+				<span id="scoreText">Score: 0</span>
+			</div>
+
+			<div class="riddle-box" id="riddleText">Press Start Challenge to begin.</div>
+
+			<div class="answer-row">
+				<input type="text" id="answerInput" placeholder="Type your answer" autocomplete="off" disabled>
+				<button id="submitButton" disabled>Submit</button>
+			</div>
+
+			<div class="status" id="statusText"></div>
+			<div class="answer-reveal" id="answerReveal"></div>
+
+			<div class="controls">
+				<button id="startButton">Start Challenge</button>
+				<button id="nextButton" disabled>Next Riddle</button>
+				<button id="restartButton" style="display:none;">Play Again</button>
+				<button id="homeButton" style="display:none;">Back To Cover</button>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		const PASS_SCORE = 1;
+
+		const progressText = document.getElementById('progressText');
+		const scoreText = document.getElementById('scoreText');
+		const riddleText = document.getElementById('riddleText');
+		const answerInput = document.getElementById('answerInput');
+		const submitButton = document.getElementById('submitButton');
+		const statusText = document.getElementById('statusText');
+		const answerReveal = document.getElementById('answerReveal');
+		const startButton = document.getElementById('startButton');
+		const nextButton = document.getElementById('nextButton');
+		const restartButton = document.getElementById('restartButton');
+		const homeButton = document.getElementById('homeButton');
+
+		let score = 0;
+		let currentIndex = 0;
+		let currentRiddle = null;
+		let gameStarted = false;
+
+		const endpointCandidates = [
+			'https://riddles-api-eight.vercel.app/logic',
+			'https://riddles-api-eight.vercel.app/funny',
+			'https://riddles-api-eight.vercel.app/%7B',
+			'https://riddles-api-eight.vercel.app/random',
+			'https://riddles-api-eight.vercel.app/api/random',
+			'https://riddles-api-eight.vercel.app/'
+		];
+
+		function sanitize(text) {
+			return String(text || '').trim().toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
+		}
+
+		function normalizeForCompare(text) {
+			return sanitize(text).replace(/^(a|an|the)\s+/, '').trim();
+		}
+
+		function levenshteinDistance(a, b) {
+			const rows = a.length + 1;
+			const cols = b.length + 1;
+			const dp = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+			for (let i = 0; i < rows; i++) dp[i][0] = i;
+			for (let j = 0; j < cols; j++) dp[0][j] = j;
+
+			for (let i = 1; i < rows; i++) {
+				for (let j = 1; j < cols; j++) {
+					const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+					dp[i][j] = Math.min(
+						dp[i - 1][j] + 1,
+						dp[i][j - 1] + 1,
+						dp[i - 1][j - 1] + cost
+					);
+				}
+			}
+
+			return dp[a.length][b.length];
+		}
+
+		function tokenOverlapScore(a, b) {
+			const tokensA = new Set(a.split(' ').filter(Boolean));
+			const tokensB = new Set(b.split(' ').filter(Boolean));
+			if (tokensA.size === 0 || tokensB.size === 0) {
+				return 0;
+			}
+
+			let overlap = 0;
+			for (const token of tokensA) {
+				if (tokensB.has(token)) {
+					overlap += 1;
+				}
+			}
+
+			return overlap / Math.max(tokensA.size, tokensB.size);
+		}
+
+		function hasKeywordMatch(a, b) {
+			const stopWords = new Set(['a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'at', 'for', 'with']);
+			const tokensA = new Set(a.split(' ').filter((token) => token && !stopWords.has(token)));
+			const tokensB = new Set(b.split(' ').filter((token) => token && !stopWords.has(token)));
+
+			for (const token of tokensA) {
+				if (tokensB.has(token)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		function isAnswerSimilar(userInput, expectedAnswer) {
+			const user = normalizeForCompare(userInput);
+			const expected = normalizeForCompare(expectedAnswer);
+
+			if (!user || !expected) {
+				return false;
+			}
+
+			if (user === expected) {
+				return true;
+			}
+
+			if ((user.length >= 3 && expected.includes(user)) || (expected.length >= 3 && user.includes(expected))) {
+				return true;
+			}
+
+			if (hasKeywordMatch(user, expected)) {
+				return true;
+			}
+
+			if (tokenOverlapScore(user, expected) >= 0.5) {
+				return true;
+			}
+
+			const maxLen = Math.max(user.length, expected.length);
+			const similarity = 1 - (levenshteinDistance(user, expected) / maxLen);
+			return similarity >= 0.72;
+		}
+
+		function parseRiddlePayload(payload) {
+			let item = payload;
+
+			if (Array.isArray(payload) && payload.length > 0) {
+				item = payload[Math.floor(Math.random() * payload.length)];
+			}
+
+			if (item && item.riddle && item.answer) {
+				return { riddle: item.riddle, answer: item.answer };
+			}
+
+			if (item && item.question && item.answer) {
+				return { riddle: item.question, answer: item.answer };
+			}
+
+			if (item && item.data && item.data.riddle && item.data.answer) {
+				return { riddle: item.data.riddle, answer: item.data.answer };
+			}
+
+			return null;
+		}
+
+		async function fetchRiddle() {
+			let lastError = 'Unknown API error';
+
+			for (const url of endpointCandidates) {
+				try {
+					const response = await fetch(url, { cache: 'no-store' });
+					if (!response.ok) {
+						lastError = `${response.status} ${response.statusText}`;
+						continue;
+					}
+
+					const payload = await response.json();
+					const parsed = parseRiddlePayload(payload);
+					if (parsed) {
+						return parsed;
+					}
+
+					lastError = 'Unexpected response shape';
+				} catch (error) {
+					lastError = error.message;
+				}
+			}
+
+			throw new Error(lastError);
+		}
+
+		function updateHud() {
+			progressText.textContent = `Riddles Attempted: ${currentIndex}`;
+			scoreText.textContent = `Score: ${score}`;
+		}
+
+		function lockAnswering() {
+			answerInput.disabled = true;
+			submitButton.disabled = true;
+		}
+
+		function unlockAnswering() {
+			answerInput.disabled = false;
+			submitButton.disabled = false;
+			answerInput.focus();
+		}
+
+		async function loadNextRiddle() {
+			lockAnswering();
+			nextButton.disabled = true;
+			statusText.className = 'status';
+			statusText.textContent = 'Fetching riddle...';
+			answerReveal.textContent = '';
+			answerInput.value = '';
+
+			try {
+				currentRiddle = await fetchRiddle();
+				currentIndex += 1;
+				updateHud();
+				riddleText.textContent = currentRiddle.riddle;
+				statusText.textContent = 'Solve it and submit your answer.';
+				unlockAnswering();
+			} catch (error) {
+				statusText.textContent = `Could not load riddle: ${error.message}. Try again.`;
+				statusText.className = 'status error';
+			}
+		}
+
+		function finishGame(passed) {
+			lockAnswering();
+			nextButton.disabled = true;
+			statusText.className = passed ? 'status success' : 'status error';
+			statusText.textContent = `Final Score: ${score}`;
+			answerReveal.textContent = passed
+				? 'You passed Round Five and finished Brain Games!'
+				: 'You did not pass this round yet. Try again!';
+
+			if (passed) {
+				setTimeout(() => {
+					window.location.href = 'ending.html';
+				}, 1000);
+				return;
+			}
+
+			restartButton.style.display = 'inline-block';
+			homeButton.style.display = 'inline-block';
+		}
+
+		function checkAnswer() {
+			if (!currentRiddle) {
+				return;
+			}
+
+			const user = sanitize(answerInput.value);
+
+			if (!user) {
+				statusText.textContent = 'Enter an answer first.';
+				statusText.className = 'status error';
+				return;
+			}
+
+			const isCorrect = isAnswerSimilar(user, currentRiddle.answer);
+
+			if (isCorrect) {
+				score += 1;
+				statusText.textContent = 'Correct!';
+				statusText.className = 'status success';
+			} else {
+				statusText.textContent = 'Not quite.';
+				statusText.className = 'status error';
+			}
+
+			answerReveal.textContent = `Answer: ${currentRiddle.answer}`;
+			updateHud();
+			lockAnswering();
+
+			if (score >= PASS_SCORE) {
+				setTimeout(() => finishGame(true), 800);
+			} else {
+				setTimeout(loadNextRiddle, 900);
+			}
+		}
+
+		function resetGame() {
+			score = 0;
+			currentIndex = 0;
+			currentRiddle = null;
+			gameStarted = true;
+			restartButton.style.display = 'none';
+			homeButton.style.display = 'none';
+			nextButton.style.display = 'none';
+			startButton.disabled = true;
+			updateHud();
+			loadNextRiddle();
+		}
+
+		startButton.addEventListener('click', resetGame);
+		restartButton.addEventListener('click', resetGame);
+		nextButton.addEventListener('click', loadNextRiddle);
+		homeButton.addEventListener('click', () => {
+			window.location.href = 'coverpage.html';
+		});
+		submitButton.addEventListener('click', checkAnswer);
+		answerInput.addEventListener('keypress', (event) => {
+			if (event.key === 'Enter' && !submitButton.disabled) {
+				checkAnswer();
+			}
+		});
+
+		updateHud();
+	</script>
+</body>
+</html>
