@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Brain Games - More Games</title>
+	<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Bangers&family=Cinzel:wght@400;700&family=Baloo+2:wght@700;800&family=Source+Sans+3:wght@700;800&display=swap" rel="stylesheet">
+	<style>
+		*, *::before, *::after { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			font-family: 'Cinzel', serif;
+			background: radial-gradient(circle at 20% 20%, #12213d 0%, #0a1224 48%, #050a14 100%);
+			color: #f3efe7;
+			padding: 30px 20px 40px;
+		}
+
+		h1 {
+			margin: 0 0 8px;
+			font-size: clamp(2rem, 4vw, 3.4rem);
+			letter-spacing: 0.14em;
+			color: #f6cf63;
+			text-align: center;
+			text-shadow: 0 0 18px rgba(246, 207, 99, 0.35);
+		}
+
+		.lead {
+			margin: 0 0 36px;
+			font-size: 1rem;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			color: #c9bfab;
+			text-align: center;
+		}
+
+		/* grid of 5 cards */
+		.grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: 22px;
+			width: 100%;
+			max-width: 1160px;
+
+			/* hidden state */
+			opacity: 0;
+			transform: translateY(28px);
+			visibility: hidden;
+			transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s;
+		}
+
+		.grid.visible {
+			opacity: 1;
+			transform: translateY(0);
+			visibility: visible;
+		}
+
+		/* individual cards animate in with stagger via inline delay */
+		.game-card {
+			border-radius: 18px;
+			padding: 28px 20px 24px;
+			text-align: center;
+			cursor: pointer;
+			text-decoration: none;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 10px;
+			transition: transform 0.18s ease, box-shadow 0.18s ease;
+			opacity: 0;
+			transform: translateY(22px);
+			animation: none;
+		}
+
+		.game-card.pop-in {
+			animation: card-pop 0.42s ease forwards;
+		}
+
+		@keyframes card-pop {
+			to { opacity: 1; transform: translateY(0); }
+		}
+
+		.game-card:hover {
+			transform: translateY(-4px) scale(1.02);
+		}
+
+		.game-card .icon {
+			font-size: 2.6rem;
+			line-height: 1;
+		}
+
+		.game-card .round-label {
+			font-size: 0.72rem;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+			opacity: 0.78;
+		}
+
+		.game-card .name {
+			font-weight: 800;
+			line-height: 1.2;
+		}
+
+		/* ── Round 1: Jeopardy ─────────────────────────────── */
+		.card-r1 {
+			background: linear-gradient(155deg, #0d235e 0%, #091750 100%);
+			border: 3px solid #caa449;
+			box-shadow: 0 12px 30px rgba(0,0,0,0.4), inset 0 0 0 2px rgba(243,214,123,0.35);
+			color: #f6cf63;
+			font-family: 'Source Sans 3', sans-serif;
+		}
+		.card-r1 .name { font-family: 'Bebas Neue', sans-serif; font-size: 1.7rem; letter-spacing: 0.06em; }
+		.card-r1:hover { box-shadow: 0 18px 40px rgba(0,0,0,0.5), 0 0 24px rgba(202,164,73,0.4); }
+
+		/* ── Round 2: Western Hangman ──────────────────────── */
+		.card-r2 {
+			background: linear-gradient(155deg, #3d2200 0%, #261600 100%);
+			border: 3px solid #a07843;
+			box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+			color: #f5dfa5;
+			font-family: 'Cinzel', serif;
+		}
+		.card-r2 .name { font-size: 1.3rem; letter-spacing: 0.06em; }
+		.card-r2:hover { box-shadow: 0 18px 40px rgba(0,0,0,0.5), 0 0 22px rgba(160,120,67,0.4); }
+
+		/* ── Round 3: Math Sprint ──────────────────────────── */
+		.card-r3 {
+			background: linear-gradient(155deg, #2d1d44 0%, #1f1230 100%);
+			border: 3px solid rgba(196, 167, 222, 0.7);
+			box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+			color: #e8d5ff;
+			font-family: 'Cinzel', serif;
+		}
+		.card-r3 .name { font-size: 1.3rem; letter-spacing: 0.06em; }
+		.card-r3:hover { box-shadow: 0 18px 40px rgba(0,0,0,0.5), 0 0 22px rgba(196,167,222,0.35); }
+
+		/* ── Round 4: Alice Memory ─────────────────────────── */
+		.card-r4 {
+			background: linear-gradient(155deg, #1a0e2e 0%, #120920 100%);
+			border: 3px solid #dda0dd;
+			box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+			color: #f0e6ff;
+			font-family: 'Cinzel', serif;
+		}
+		.card-r4 .name { font-size: 1.3rem; letter-spacing: 0.06em; }
+		.card-r4:hover { box-shadow: 0 18px 40px rgba(0,0,0,0.5), 0 0 22px rgba(221,160,221,0.4); }
+
+		/* ── Round 5: Looney Tunes Riddles ─────────────────── */
+		.card-r5 {
+			background: linear-gradient(160deg, #ffd84d 0%, #f9931f 40%, #e34a26 75%, #b7262e 100%);
+			border: 4px solid #2b1a0d;
+			box-shadow: 0 10px 0 #2b1a0d, 0 14px 30px rgba(0,0,0,0.35);
+			color: #2b1a0d;
+			font-family: 'Baloo 2', cursive;
+			position: relative;
+			overflow: hidden;
+		}
+		.card-r5::before {
+			content: '';
+			position: absolute;
+			inset: 8px;
+			border: 2px dashed rgba(43,26,13,0.4);
+			border-radius: 12px;
+			pointer-events: none;
+		}
+		.card-r5 .name { font-family: 'Bangers', cursive; font-size: 1.8rem; letter-spacing: 0.06em; color: #2b1a0d; }
+		.card-r5 .round-label { color: rgba(43,26,13,0.7); }
+		.card-r5 .icon { position: relative; z-index: 1; }
+		.card-r5 .name, .card-r5 .round-label, .card-r5 p { position: relative; z-index: 1; }
+		.card-r5:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 14px 0 #2b1a0d, 0 18px 36px rgba(0,0,0,0.4); }
+
+		/* card sub-description */
+		.game-card p {
+			margin: 0;
+			font-size: 0.82rem;
+			opacity: 0.78;
+			line-height: 1.4;
+		}
+
+		/* back link */
+		.back-link {
+			margin-top: 38px;
+			font-size: 0.9rem;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			color: #9ea8ba;
+			text-decoration: none;
+			transition: color 0.2s;
+		}
+		.back-link:hover { color: #f6cf63; }
+	</style>
+</head>
+<body>
+	<h1>More Games</h1>
+	<p class="lead">Choose a game to play</p>
+
+	<div class="grid" id="grid">
+
+		<!-- Round 1 – Jeopardy Trivia -->
+		<a class="game-card card-r1" href="roundone.html" style="animation-delay: 0.05s">
+			<div class="icon">🎙️</div>
+			<div class="round-label">Round 1</div>
+			<div class="name">Trivia Challenge</div>
+			<p>Answer 3 trivia questions correctly to advance.</p>
+		</a>
+
+		<!-- Round 2 – Western Hangman -->
+		<a class="game-card card-r2" href="roundtwo.html" style="animation-delay: 0.15s">
+			<div class="icon">🤠</div>
+			<div class="round-label">Round 2</div>
+			<div class="name">Western Hangman</div>
+			<p>Guess the word before the 3D gallows is complete.</p>
+		</a>
+
+		<!-- Round 3 – Math Sprint -->
+		<a class="game-card card-r3" href="roundthree.html" style="animation-delay: 0.25s">
+			<div class="icon">➕</div>
+			<div class="round-label">Round 3</div>
+			<div class="name">Math Sprint</div>
+			<p>Solve as many math problems as you can in 60 seconds.</p>
+		</a>
+
+		<!-- Round 4 – Alice Memory -->
+		<a class="game-card card-r4" href="roundfour.html" style="animation-delay: 0.35s">
+			<div class="icon">🐰</div>
+			<div class="round-label">Round 4</div>
+			<div class="name">Memory Game</div>
+			<p>Match all Wonderland pairs — wrong guesses add more cards.</p>
+		</a>
+
+		<!-- Round 5 – Looney Tunes Riddle -->
+		<a class="game-card card-r5" href="roundfive.html" style="animation-delay: 0.45s">
+			<div class="icon">🥕</div>
+			<div class="round-label">Round 5</div>
+			<div class="name">Riddle Finale</div>
+			<p>Solve one riddle to finish. Think you can end the game?</p>
+		</a>
+
+	</div>
+
+	<a class="back-link" href="coverpage.html">← Back to Home</a>
+
+	<script>
+		const grid = document.getElementById('grid');
+		const cards = grid.querySelectorAll('.game-card');
+
+		// Reveal the grid then stagger each card in
+		requestAnimationFrame(() => {
+			grid.classList.add('visible');
+			cards.forEach(card => card.classList.add('pop-in'));
+		});
+
+		// Flag so each round returns here instead of chaining to the next round
+		cards.forEach(card => {
+			card.addEventListener('click', () => {
+				sessionStorage.setItem('fromMoreGames', '1');
+			});
+		});
+	</script>
+</body>
+</html>

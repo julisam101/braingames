@@ -48,7 +48,7 @@
     <div id="startBox" class="box">
         <h2>Start Today's Challenge</h2>
     </div>
-    <div class="box">
+    <div id="moreGamesBox" class="box">
         <h2>More Games....</h2>
     </div>
     <script>
@@ -59,6 +59,8 @@
         };
         startBox.addEventListener('click', navigateToRoundOne);
         startBox.addEventListener('mousedown', navigateToRoundOne);
+        const moreGamesBox = document.getElementById('moreGamesBox');
+        moreGamesBox.addEventListener('click', () => { window.location.href = 'moregames.html'; });
         let direction = 1;
         setInterval(() => {
             h1.style.transform = `translateY(${direction * 10}px)`;
@@ -66,6 +68,8 @@
         }, 300);
 
         const boxes = document.querySelectorAll('.box');
+        let lastStartMoveAt = 0;
+        let lastMoreMoveAt = 0;
         boxes.forEach(box => {
             // Set initial random position for each box
             const x = Math.random() * (window.innerWidth - 300);
@@ -75,6 +79,26 @@
             
             // Add mouseenter listener to move on hover
             box.addEventListener('mouseenter', () => {
+                const isNudgeBox = box.id === 'startBox' || box.id === 'moreGamesBox';
+                if (isNudgeBox) {
+                    const now = Date.now();
+                    const lastMove = box.id === 'startBox' ? lastStartMoveAt : lastMoreMoveAt;
+                    if (now - lastMove < 450) return;
+                    if (box.id === 'startBox') lastStartMoveAt = now;
+                    else lastMoreMoveAt = now;
+
+                    const currentX = parseFloat(box.style.left) || 0;
+                    const currentY = parseFloat(box.style.top) || 0;
+                    const nudgeX = (Math.random() - 0.5) * 180;
+                    const nudgeY = (Math.random() - 0.5) * 120;
+                    const maxX = window.innerWidth - 300;
+                    const maxY = window.innerHeight - 150;
+
+                    box.style.left = `${Math.max(0, Math.min(maxX, currentX + nudgeX))}px`;
+                    box.style.top  = `${Math.max(0, Math.min(maxY, currentY + nudgeY))}px`;
+                    return;
+                }
+
                 const newX = Math.random() * (window.innerWidth - 300);
                 const newY = Math.random() * (window.innerHeight - 150);
                 box.style.left = `${newX}px`;

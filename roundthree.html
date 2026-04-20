@@ -163,20 +163,18 @@
             <h1>Round 3: Math Sprint</h1>
             <p>Answer simple addition, subtraction, multiplication, and division problems.</p>
             <div class="problem" id="problem">Ready?</div>
-            <input type="number" class="answer-input" id="answerInput" placeholder="Your answer">
+            <input type="number" class="answer-input" id="answerInput" placeholder="Your answer" style="display: none;">
             <div class="button-row">
-                <button class="action-button" id="submitButton">Submit Answer</button>
-                <button class="action-button" id="nextButton" disabled>Next Round</button>
+                <button class="action-button" id="submitButton" style="display: none;">Submit Answer</button>
             </div>
             <div class="score" id="score">Score: 0</div>
-            <div class="status" id="statusText">Click submit to start!</div>
+            <div class="status" id="statusText">Get ready...</div>
         </div>
     </div>
     <script>
         const problemEl = document.getElementById('problem');
         const answerInput = document.getElementById('answerInput');
         const submitButton = document.getElementById('submitButton');
-        const nextButton = document.getElementById('nextButton');
         const scoreEl = document.getElementById('score');
         const statusText = document.getElementById('statusText');
         const timerEl = document.getElementById('timer');
@@ -185,6 +183,7 @@
         let timeLeft = 60;
         let timerId;
         let currentProblem = null;
+        let countdownStarted = false;
 
         function generateProblem() {
             const difficulty = Math.floor(score / 5);
@@ -217,6 +216,10 @@
         }
 
         function startCountdown() {
+            if (countdownStarted) {
+                return;
+            }
+            countdownStarted = true;
             submitButton.style.display = 'none';
             answerInput.style.display = 'none';
             problemEl.textContent = 'Ready...';
@@ -238,7 +241,6 @@
             scoreEl.textContent = `Score: ${score}`;
             timerEl.textContent = timeLeft;
             statusText.textContent = '';
-            nextButton.disabled = true;
             submitButton.style.display = 'inline-block';
             answerInput.style.display = 'inline-block';
             submitButton.disabled = false;
@@ -288,34 +290,38 @@
             problemEl.textContent = 'Time\'s up!';
             answerInput.disabled = true;
             submitButton.disabled = true;
-            statusText.textContent = `Final Score: ${score} correct answers! Advancing to Round 4...`;
-            statusText.className = 'status success';
-            setTimeout(() => {
-                window.location.href = 'roundfour.html';
-            }, 2000);
+            if (sessionStorage.getItem('fromMoreGames')) {
+                sessionStorage.removeItem('fromMoreGames');
+                statusText.textContent = `Final Score: ${score} correct answers!`;
+                statusText.className = 'status success';
+                const optDiv = document.createElement('div');
+                optDiv.style.cssText = 'display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;';
+                optDiv.innerHTML = '<button class="action-button" onclick="window.location.href=\'moregames.html\'">↩ More Games</button><button class="action-button" onclick="window.location.reload()">🔄 Play Again</button>';
+                document.querySelector('.card').appendChild(optDiv);
+            } else {
+                statusText.textContent = `Final Score: ${score} correct answers! Advancing to Round 4...`;
+                statusText.className = 'status success';
+                setTimeout(() => {
+                    window.location.href = 'roundfour.html';
+                }, 2000);
+            }
         }
 
         submitButton.addEventListener('click', () => {
-            if (!timerId) {
-                startCountdown();
-            } else {
+            if (timerId) {
                 checkAnswer();
             }
         });
 
         answerInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                if (!timerId) {
-                    startCountdown();
-                } else {
+                if (timerId) {
                     checkAnswer();
                 }
             }
         });
 
-        nextButton.addEventListener('click', () => {
-            window.location.href = 'roundfour.html';
-        });
+        startCountdown();
     </script>
 </body>
 </html>

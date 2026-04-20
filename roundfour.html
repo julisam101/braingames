@@ -94,6 +94,43 @@
         .status.error {
             color: #dc3545;
         }
+        .intro-panel {
+            margin: 16px auto 6px;
+            max-width: 560px;
+            padding: 22px;
+            border: 2px solid rgba(147, 112, 219, 0.45);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.7);
+        }
+        .intro-title {
+            margin: 0 0 10px;
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            color: #6a3ea1;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .start-button {
+            display: inline-block;
+            margin: 8px auto 0;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #9370db 0%, #8b4513 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 10px rgba(147, 112, 219, 0.35);
+        }
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(147, 112, 219, 0.4);
+        }
+        .game-shell {
+            display: none;
+        }
         .next-button {
             display: block;
             margin: 20px auto;
@@ -124,17 +161,24 @@
     <div class="page">
         <div class="card">
             <h1>Round Four</h1>
-            <p>Alice in Wonderland Memory - Start with 2 pairs! Every wrong match adds another curious character!</p>
-            
-            <div class="timer" id="timerDisplay">Time: 0.00s</div>
 
-            <div class="game-container" id="gameContainer">
-                <!-- Cards will be generated here -->
+            <div class="intro-panel" id="introPanel">
+                <h2 class="intro-title">Memory Game</h2>
+                <p>Match every pair to clear the board. Every 2 wrong matches adds a new pair.</p>
+                <button class="start-button" id="startButton">Start</button>
             </div>
 
-            <div class="status" id="statusText"></div>
+            <div class="game-shell" id="gameShell">
+                <div class="timer" id="timerDisplay">Time: 0.00s</div>
 
-            <button class="next-button" id="nextButton" disabled>Next Round</button>
+                <div class="game-container" id="gameContainer">
+                    <!-- Cards will be generated here -->
+                </div>
+
+                <div class="status" id="statusText"></div>
+
+                <button class="next-button" id="nextButton" disabled>Next Round</button>
+            </div>
         </div>
     </div>
 
@@ -143,6 +187,9 @@
         const statusText = document.getElementById('statusText');
         const nextButton = document.getElementById('nextButton');
         const timerDisplay = document.getElementById('timerDisplay');
+        const introPanel = document.getElementById('introPanel');
+        const startButton = document.getElementById('startButton');
+        const gameShell = document.getElementById('gameShell');
 
         // Alice in Wonderland themed card symbols for progressive difficulty
         const cardSymbols = [
@@ -159,7 +206,7 @@
         let startTime;
         let timerInterval;
         let wrongMatches = 0;
-        let currentGridSize = 4; // Start with 4 cards (2 pairs)
+        let currentGridSize = 6; // Start with 6 cards (3 pairs)
         let activeSymbols = []; // Randomly chosen symbols for this session
         let symbolPool = [];    // Remaining symbols not yet in play
 
@@ -275,10 +322,19 @@
                     // Game won
                     stopTimer();
                     const finalTime = getFinalTime();
-                    statusText.textContent = `Curiouser and curiouser! All ${totalPairs} Wonderland pairs matched in ${finalTime}s! Off to Round 5...`;
-                    setTimeout(() => {
-                        window.location.href = 'roundfive.html';
-                    }, 2000);
+                    if (sessionStorage.getItem('fromMoreGames')) {
+                        sessionStorage.removeItem('fromMoreGames');
+                        statusText.textContent = `Curiouser and curiouser! All ${totalPairs} Wonderland pairs matched in ${finalTime}s!`;
+                        const optDiv = document.createElement('div');
+                        optDiv.style.cssText = 'display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;';
+                        optDiv.innerHTML = '<button class="next-button" onclick="window.location.href=\'moregames.html\'">↩ More Games</button><button class="next-button" onclick="window.location.reload()">🔄 Play Again</button>';
+                        document.querySelector('.card').appendChild(optDiv);
+                    } else {
+                        statusText.textContent = `Curiouser and curiouser! All ${totalPairs} Wonderland pairs matched in ${finalTime}s! Off to Round 5...`;
+                        setTimeout(() => {
+                            window.location.href = 'roundfive.html';
+                        }, 2000);
+                    }
                 } else {
                     setTimeout(() => {
                         statusText.textContent = '';
@@ -305,10 +361,12 @@
                     canFlip = true;
                 }, 1000);
 
-                // Add another pair (2 cards) for every wrong match
-                setTimeout(() => {
-                    expandGrid();
-                }, 1000);
+                // Add another pair (2 cards) for every 2 wrong matches
+                if (wrongMatches % 2 === 0) {
+                    setTimeout(() => {
+                        expandGrid();
+                    }, 1000);
+                }
             }
         }
 
@@ -317,21 +375,28 @@
             flippedCards = [];
             canFlip = true;
             wrongMatches = 0;
-            currentGridSize = 4;
+            currentGridSize = 6;
             statusText.textContent = '';
             nextButton.disabled = true;
             timerDisplay.textContent = 'Time: 0.00s';
 
-            // Shuffle the full symbol pool and pick 2 random starting pairs
+            // Shuffle the full symbol pool and pick 3 random starting pairs
             symbolPool = shuffleArray([...cardSymbols]);
-            activeSymbols = [symbolPool.splice(0, 1)[0], symbolPool.splice(0, 1)[0]];
+            activeSymbols = [
+                symbolPool.splice(0, 1)[0],
+                symbolPool.splice(0, 1)[0],
+                symbolPool.splice(0, 1)[0]
+            ];
 
             createCards();
             startTimer();
         }
 
-        // Start the game
-        startGame();
+        startButton.addEventListener('click', () => {
+            introPanel.style.display = 'none';
+            gameShell.style.display = 'block';
+            startGame();
+        });
     </script>
 </body>
 </html>

@@ -503,9 +503,17 @@
                 statusMessage.style.color = '#228B22';
                 disableAllLetters();
                 document.body.className = 'won';
-                setTimeout(() => {
-                    window.location.href = 'roundthree.html';
-                }, 2000);
+                if (sessionStorage.getItem('fromMoreGames')) {
+                    sessionStorage.removeItem('fromMoreGames');
+                    const optDiv = document.createElement('div');
+                    optDiv.style.cssText = 'display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;';
+                    optDiv.innerHTML = '<button class="action-button" onclick="window.location.href=\'moregames.html\'">↩ More Games</button><button class="action-button" onclick="window.location.reload()">🔄 Play Again</button>';
+                    document.querySelector('.container').appendChild(optDiv);
+                } else {
+                    setTimeout(() => {
+                        window.location.href = 'roundthree.html';
+                    }, 2000);
+                }
             } else if (wrongGuesses >= MAX_WRONG) {
                 statusMessage.textContent = `💀 Game Over! The word was: ${word}`;
                 statusMessage.style.color = '#8B0000';
@@ -551,7 +559,12 @@
 
         newGameButton.addEventListener('click', startNewGame);
         nextButton.addEventListener('click', () => {
-            window.location.href = 'roundthree.html';
+            if (sessionStorage.getItem('fromMoreGames')) {
+                sessionStorage.removeItem('fromMoreGames');
+                window.location.href = 'moregames.html';
+            } else {
+                window.location.href = 'roundthree.html';
+            }
         });
 
         initThreeJS();
