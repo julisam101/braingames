@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Games - Round Four: Alice in Wonderland Memory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, #e6f3ff 0%, #f0e6ff 50%, #ffe6f0 100%);
+            color: #2f2a29;
+        }
+        .page {
+            width: min(760px, 100%);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .card {
+            background: rgba(255,255,255,0.9);
+            border: 3px solid rgba(147, 112, 219, 0.6);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(147, 112, 219, 0.3);
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #9370db;
+            margin-bottom: 10px;
+        }
+        h1 {
+            margin: 0 0 10px;
+            font-size: clamp(2rem, 3vw, 3.2rem);
+            text-align: center;
+            letter-spacing: 0.16em;
+            color: #8b4513;
+        }
+        p {
+            margin: 0 0 18px;
+            text-align: center;
+            color: #5f4a63;
+            line-height: 1.5;
+        }
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .memory-card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #fff 0%, #f8f0ff 100%);
+            border: 2px solid #dda0dd;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+            user-select: none;
+            box-shadow: 0 4px 8px rgba(221, 160, 221, 0.3);
+        }
+        .memory-card.flipped {
+            background: linear-gradient(135deg, #e6e6fa 0%, #f0e6ff 100%);
+            transform: rotateY(180deg);
+            box-shadow: 0 6px 12px rgba(221, 160, 221, 0.5);
+        }
+        .memory-card.matched {
+            background: linear-gradient(135deg, #f0fff0 0%, #e6ffe6 100%);
+            cursor: default;
+            opacity: 0.8;
+            box-shadow: 0 4px 8px rgba(144, 238, 144, 0.4);
+        }
+        .status {
+            margin: 20px 0;
+            font-size: 18px;
+            text-align: center;
+            min-height: 24px;
+        }
+        .status.success {
+            color: #28a745;
+        }
+        .status.error {
+            color: #dc3545;
+        }
+        .next-button {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #9370db 0%, #8b4513 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 8px rgba(147, 112, 219, 0.4);
+        }
+        .next-button:hover {
+            background: linear-gradient(135deg, #8b4513 0%, #9370db 100%);
+            transform: translateY(-2px);
+        }
+        .next-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="card">
+            <h1>Round Four</h1>
+            <p>Alice in Wonderland Memory - Start with 2 pairs! Every wrong match adds another curious character!</p>
+            
+            <div class="timer" id="timerDisplay">Time: 0.00s</div>
+
+            <div class="game-container" id="gameContainer">
+                <!-- Cards will be generated here -->
+            </div>
+
+            <div class="status" id="statusText"></div>
+
+            <button class="next-button" id="nextButton" disabled>Next Round</button>
+        </div>
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('gameContainer');
+        const statusText = document.getElementById('statusText');
+        const nextButton = document.getElementById('nextButton');
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        // Alice in Wonderland themed card symbols for progressive difficulty
+        const cardSymbols = [
+            '👧', '🐰', '😼', '🎩', '👸', '🐛', '🎭', '🃏', '☕', '🍄',  // Initial 10 pairs (5x4 grid)
+            '🚪', '🕐', '🗝️', '🍰', '🍶', '⌚', '🦅', '🦔', '🌹', '♠️',  // Expansion set 1
+            '♥️', '♦️', '♣️', '🎪', '🌟', '🌀', '👑', '🏰', '🧶', '🎨',  // Expansion set 2
+            '📖', '🪞', '🌈', '🦋', '🍯', '🕯️', '🎪', '🏹', '🛡️', '⚔️'   // Expansion set 3
+        ];
+
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let canFlip = true;
+        let startTime;
+        let timerInterval;
+        let wrongMatches = 0;
+        let currentGridSize = 4; // Start with 4 cards (2 pairs)
+        let activeSymbols = []; // Randomly chosen symbols for this session
+        let symbolPool = [];    // Remaining symbols not yet in play
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 10);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            const seconds = (elapsed / 1000).toFixed(2);
+            timerDisplay.textContent = `Time: ${seconds}s`;
+        }
+
+        function getFinalTime() {
+            const elapsed = Date.now() - startTime;
+            return (elapsed / 1000).toFixed(2);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createCards() {
+            const pairedSymbols = activeSymbols.flatMap((symbol) => [symbol, symbol]);
+            const shuffledSymbols = shuffleArray([...pairedSymbols]);
+            gameContainer.innerHTML = '';
+            cards = [];
+
+            shuffledSymbols.forEach((symbol, index) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.symbol = symbol;
+                card.dataset.index = index;
+                card.addEventListener('click', flipCard);
+                gameContainer.appendChild(card);
+                cards.push(card);
+            });
+        }
+
+        function expandGrid() {
+            const oldSize = currentGridSize;
+            currentGridSize += 2; // Add 2 more cards (1 pair)
+            
+            if (currentGridSize > cardSymbols.length * 2) {
+                currentGridSize = cardSymbols.length * 2; // Cap at maximum available symbols
+            }
+            
+            if (currentGridSize > oldSize) {
+                statusText.textContent = `Oh dear! Another Wonderland character has appeared!`;
+                statusText.className = 'status error';
+                
+                setTimeout(() => {
+                    // Pick a random unused symbol from the pool
+                    const newSymbol = symbolPool.length > 0
+                        ? symbolPool.splice(Math.floor(Math.random() * symbolPool.length), 1)[0]
+                        : cardSymbols[Math.floor(Math.random() * cardSymbols.length)];
+                    activeSymbols.push(newSymbol);
+
+                    // Add two cards with the same symbol (a matching pair)
+                    for (let i = 0; i < 2; i++) {
+                        const card = document.createElement('div');
+                        card.className = 'memory-card';
+                        card.dataset.symbol = newSymbol;
+                        card.dataset.index = oldSize + i;
+                        card.addEventListener('click', flipCard);
+                        gameContainer.appendChild(card);
+                        cards.push(card);
+                    }
+                    
+                    statusText.textContent = '';
+                    statusText.className = 'status';
+                }, 1500);
+            }
+        }
+
+        function flipCard() {
+            if (!canFlip || this.classList.contains('flipped') || this.classList.contains('matched')) {
+                return;
+            }
+
+            this.classList.add('flipped');
+            this.textContent = this.dataset.symbol;
+            flippedCards.push(this);
+
+            if (flippedCards.length === 2) {
+                canFlip = false;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+
+            if (card1.dataset.symbol === card2.dataset.symbol) {
+                // Match found
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                statusText.textContent = 'A perfect match in Wonderland!';
+                statusText.className = 'status success';
+
+                const totalPairs = currentGridSize / 2;
+                if (matchedPairs === totalPairs) {
+                    // Game won
+                    stopTimer();
+                    const finalTime = getFinalTime();
+                    statusText.textContent = `Curiouser and curiouser! All ${totalPairs} Wonderland pairs matched in ${finalTime}s! Off to Round 5...`;
+                    setTimeout(() => {
+                        window.location.href = 'roundfive.html';
+                    }, 2000);
+                } else {
+                    setTimeout(() => {
+                        statusText.textContent = '';
+                        statusText.className = 'status';
+                        flippedCards = [];
+                        canFlip = true;
+                    }, 1000);
+                }
+            } else {
+                // No match
+                wrongMatches++;
+                statusText.textContent = 'Not quite right in Wonderland!';
+                statusText.className = 'status error';
+
+                // Flip cards back after delay and allow continued play
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    card1.textContent = '';
+                    card2.textContent = '';
+                    statusText.textContent = '';
+                    statusText.className = 'status';
+                    flippedCards = [];
+                    canFlip = true;
+                }, 1000);
+
+                // Add another pair (2 cards) for every wrong match
+                setTimeout(() => {
+                    expandGrid();
+                }, 1000);
+            }
+        }
+
+        function startGame() {
+            matchedPairs = 0;
+            flippedCards = [];
+            canFlip = true;
+            wrongMatches = 0;
+            currentGridSize = 4;
+            statusText.textContent = '';
+            nextButton.disabled = true;
+            timerDisplay.textContent = 'Time: 0.00s';
+
+            // Shuffle the full symbol pool and pick 2 random starting pairs
+            symbolPool = shuffleArray([...cardSymbols]);
+            activeSymbols = [symbolPool.splice(0, 1)[0], symbolPool.splice(0, 1)[0]];
+
+            createCards();
+            startTimer();
+        }
+
+        // Start the game
+        startGame();
+    </script>
+</body>
+</html>
