@@ -280,7 +280,12 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
             margin: 0 auto 26px;
-            max-width: 480px;
+            max-width: 520px;
+        }
+        @media (max-width: 420px) {
+            .intro-categories {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
         .category-tile {
             background: linear-gradient(165deg, #0e2b7f 0%, #091750 100%);
@@ -292,6 +297,20 @@
             letter-spacing: 0.08em;
             color: #f6cf63;
             text-align: center;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+            user-select: none;
+        }
+        .category-tile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        .category-tile.selected {
+            background: linear-gradient(135deg, #f6cf63 0%, #c18f29 100%);
+            color: #09173f;
+            border-color: #fff7c0;
+            box-shadow: 0 0 0 3px rgba(246,207,99,0.45), 0 6px 18px rgba(0,0,0,0.35);
+            transform: translateY(-2px);
         }
         .begin-btn {
             background: linear-gradient(135deg, #f6cf63 0%, #c18f29 100%);
@@ -306,6 +325,13 @@
             transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 0 6px 20px rgba(0,0,0,0.4);
         }
+        .begin-btn:disabled {
+            opacity: 0.38;
+            cursor: not-allowed;
+            filter: none;
+            transform: none;
+            box-shadow: none;
+        }
         .begin-btn:hover {
             transform: translateY(-2px);
             filter: brightness(1.08);
@@ -319,26 +345,27 @@
 <body>
     <div class="progress-bar" id="progressBar"></div>
     <div class="container">
-        <div class="score-tracker" id="scoreTracker">0/3</div>
-        <h1>Trivia Challenge</h1>
-        <p class="subtitle">Answer the question correctly to win.</p>
 
         <div class="intro-panel" id="introPanel">
             <div class="intro-banner">Round One &mdash; Brain Games</div>
             <h2 class="intro-title">Trivia Challenge</h2>
-            <p class="intro-sub">Answer 3 questions correctly to advance</p>
+            <p class="intro-sub">Pick a category, then step up to the podium</p>
             <div class="intro-categories">
-                <div class="category-tile">Science &amp; Nature</div>
-                <div class="category-tile">History</div>
-                <div class="category-tile">Pop Culture</div>
-                <div class="category-tile">Geography</div>
-                <div class="category-tile">Sports</div>
-                <div class="category-tile">Entertainment</div>
+                <div class="category-tile" data-category-id="17" data-category-name="Science &amp; Nature">🔬 Science &amp; Nature</div>
+                <div class="category-tile" data-category-id="23" data-category-name="History">📜 History</div>
+                <div class="category-tile" data-category-id="14" data-category-name="TV">📺 Television</div>
+                <div class="category-tile" data-category-id="22" data-category-name="Geography">🌍 Geography</div>
+                <div class="category-tile" data-category-id="21" data-category-name="Sports">🏆 Sports</div>
+                <div class="category-tile" data-category-id="11" data-category-name="Film">🎬 Film</div>
+                <div class="category-tile" data-category-id="12" data-category-name="Music">🎵 Music</div>
+                <div class="category-tile" data-category-id="15" data-category-name="Video Games">🎮 Video Games</div>
+                <div class="category-tile" data-category-id="27" data-category-name="Animals">🐾 Animals</div>
             </div>
-            <button class="begin-btn" id="beginButton">Step Up to the Podium</button>
+            <button class="begin-btn" id="beginButton" disabled>Choose a Category</button>
         </div>
 
         <div class="game-shell" id="gameShell">
+            <div class="score-tracker" id="scoreTracker">0/3</div>
             <div class="question-card">
                 <div id="questionText" class="question-text">Loading trivia question...</div>
                 <div id="answers" class="answers"></div>
@@ -352,7 +379,8 @@
     </div>
 
     <script>
-        const triviaApiUrl = 'https://opentdb.com/api.php?amount=50&difficulty=easy&type=multiple';
+        const triviaApiBase = 'https://opentdb.com/api.php?amount=20&difficulty=easy&type=multiple';
+        let selectedCategoryId = null;
         let triviaQuestions = [];
         let currentQuestion = null;
         let selectedAnswer = null;
@@ -371,9 +399,23 @@
         const gameShell = document.getElementById('gameShell');
         const beginButton = document.getElementById('beginButton');
 
+        // Category tile selection
+        document.querySelectorAll('.category-tile').forEach(tile => {
+            tile.addEventListener('click', () => {
+                document.querySelectorAll('.category-tile').forEach(t => t.classList.remove('selected'));
+                tile.classList.add('selected');
+                selectedCategoryId = tile.dataset.categoryId;
+                const name = tile.dataset.categoryName;
+                beginButton.disabled = false;
+                beginButton.textContent = `Play ${name}`;
+            });
+        });
+
         beginButton.addEventListener('click', () => {
+            if (!selectedCategoryId) return;
             introPanel.style.display = 'none';
             gameShell.style.display = 'block';
+            loadTriviaQuestions();
         });
 
         function decodeHtml(text) {
@@ -392,8 +434,13 @@
 
         async function loadTriviaQuestions() {
             try {
-                const response = await fetch(triviaApiUrl);
+                const url = `${triviaApiBase}&category=${selectedCategoryId}`;
+                const response = await fetch(url);
                 const data = await response.json();
+                if (!data.results || data.results.length === 0) {
+                    questionText.textContent = 'No questions found for that category. Try a different one.';
+                    return;
+                }
                 triviaQuestions = data.results.map(question => ({
                     question: decodeHtml(question.question),
                     correct_answer: decodeHtml(question.correct_answer),
@@ -533,7 +580,6 @@
             }
         });
 
-        loadTriviaQuestions();
         updateScore();
     </script>
 </body>
