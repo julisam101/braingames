@@ -6,6 +6,17 @@
     <title>Brain Games - Round Three: Math Sprint</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --space-void: #050814;
+            --space-deep: #101a3a;
+            --space-mid: #1d2f66;
+            --moon-glow: #f6f1d5;
+            --moon-dust: #c8d2f3;
+            --star: #eef3ff;
+            --accent: #89c8ff;
+            --danger: #ff9b70;
+            --success: #9fffa8;
+        }
         body {
             margin: 0;
             min-height: 100vh;
@@ -13,21 +24,63 @@
             align-items: center;
             justify-content: center;
             font-family: 'Cinzel', serif;
-            background: linear-gradient(135deg, #ffe6f4 0%, #dfe7ee 100%);
-            color: #2f2a29;
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 18% 22%, rgba(246, 241, 213, 0.2) 0 8%, transparent 9%),
+                radial-gradient(circle at 82% 18%, rgba(137, 200, 255, 0.25) 0 6%, transparent 7%),
+                radial-gradient(circle at 72% 76%, rgba(200, 210, 243, 0.18) 0 12%, transparent 13%),
+                linear-gradient(150deg, var(--space-void) 0%, var(--space-deep) 52%, var(--space-mid) 100%);
+            color: var(--star);
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(2px 2px at 12% 18%, rgba(255, 255, 255, 0.9) 0 98%, transparent 100%),
+                radial-gradient(2px 2px at 30% 36%, rgba(255, 255, 255, 0.8) 0 98%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 54% 14%, rgba(255, 255, 255, 0.7) 0 98%, transparent 100%),
+                radial-gradient(2px 2px at 76% 48%, rgba(255, 255, 255, 0.75) 0 98%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 88% 26%, rgba(255, 255, 255, 0.75) 0 98%, transparent 100%),
+                radial-gradient(2px 2px at 22% 72%, rgba(255, 255, 255, 0.8) 0 98%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 44% 82%, rgba(255, 255, 255, 0.8) 0 98%, transparent 100%),
+                radial-gradient(2px 2px at 66% 74%, rgba(255, 255, 255, 0.9) 0 98%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 94% 66%, rgba(255, 255, 255, 0.7) 0 98%, transparent 100%);
+            opacity: 0.9;
+            pointer-events: none;
+            animation: drift 18s linear infinite;
+        }
+        body::after {
+            content: '';
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            top: 8%;
+            right: 8%;
+            border-radius: 50%;
+            background:
+                radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.7) 0 8%, transparent 9%),
+                radial-gradient(circle at 62% 64%, rgba(175, 183, 214, 0.45) 0 12%, transparent 13%),
+                radial-gradient(circle at 46% 70%, rgba(175, 183, 214, 0.35) 0 8%, transparent 9%),
+                radial-gradient(circle at 36% 40%, var(--moon-glow) 0 62%, rgba(214, 220, 243, 0.8) 63% 100%);
+            box-shadow: 0 0 40px rgba(246, 241, 213, 0.35), 0 0 90px rgba(137, 200, 255, 0.2);
+            pointer-events: none;
         }
         .page {
             width: min(760px, 100%);
             padding: 20px;
             box-sizing: border-box;
+            position: relative;
+            z-index: 1;
         }
         .card {
-            background: rgba(255,255,255,0.88);
-            border: 2px solid rgba(196, 167, 222, 0.5);
+            background: rgba(8, 16, 40, 0.78);
+            border: 1px solid rgba(137, 200, 255, 0.45);
             border-radius: 24px;
-            box-shadow: 0 24px 60px rgba(179, 150, 195, 0.25);
+            box-shadow: 0 24px 60px rgba(0, 6, 30, 0.65), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
             padding: 24px;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(14px);
             text-align: center;
         }
         h1 {
@@ -35,12 +88,13 @@
             font-size: clamp(2rem, 3vw, 3.2rem);
             text-align: center;
             letter-spacing: 0.16em;
-            color: #5a315a;
+            color: var(--moon-glow);
+            text-shadow: 0 0 18px rgba(246, 241, 213, 0.35);
         }
         p {
             margin: 0 0 18px;
             text-align: center;
-            color: #5f4a63;
+            color: var(--moon-dust);
             line-height: 1.5;
         }
         .top-bar {
@@ -49,10 +103,11 @@
             align-items: center;
             gap: 16px;
             margin-bottom: 18px;
+            flex-wrap: wrap;
         }
         .top-bar .hint {
             flex: 1;
-            color: #6f496b;
+            color: var(--moon-dust);
             font-size: 0.95rem;
         }
         .top-bar .counter {
@@ -67,36 +122,39 @@
             color: #814d7f;
         }
         .timer {
-            background: rgba(255, 238, 244, 0.85);
+            background: rgba(12, 23, 58, 0.85);
             border-radius: 999px;
             padding: 10px 14px;
-            color: #8b3a72;
+            color: var(--moon-glow);
             font-size: 1.1rem;
             font-weight: 800;
             letter-spacing: 0.08em;
-            border: 1px solid rgba(196, 167, 222, 0.35);
+            border: 1px solid rgba(137, 200, 255, 0.45);
+            box-shadow: 0 0 20px rgba(137, 200, 255, 0.25);
         }
         .problem {
             font-size: 2.5rem;
             font-weight: 700;
             margin: 20px 0;
-            color: #4b2f56;
+            color: var(--star);
+            text-shadow: 0 0 16px rgba(137, 200, 255, 0.35);
         }
         .answer-input {
             width: 200px;
             padding: 12px;
-            border: 2px solid rgba(192, 158, 206, 0.7);
+            border: 2px solid rgba(137, 200, 255, 0.5);
             border-radius: 12px;
             font-size: 1.2rem;
             text-align: center;
-            background: rgba(255, 255, 255, 0.9);
-            color: #4b2f56;
+            background: rgba(5, 13, 34, 0.85);
+            color: var(--star);
             outline: none;
             margin: 0 auto;
             display: block;
         }
         .answer-input:focus {
-            border-color: #ffb6d7;
+            border-color: var(--moon-glow);
+            box-shadow: 0 0 0 3px rgba(246, 241, 213, 0.2);
         }
         .button-row {
             display: flex;
@@ -106,9 +164,9 @@
             margin-top: 20px;
         }
         .action-button {
-            background: #ffd700;
-            color: #111;
-            border: none;
+            background: linear-gradient(140deg, #f0f4ff 0%, #cfe1ff 100%);
+            color: #0f1e49;
+            border: 1px solid rgba(255, 255, 255, 0.5);
             border-radius: 14px;
             padding: 14px 24px;
             font-size: 1rem;
@@ -122,28 +180,60 @@
         }
         .action-button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+            box-shadow: 0 12px 30px rgba(137, 200, 255, 0.35);
         }
         .status {
             text-align: center;
             margin-top: 18px;
             min-height: 1.4em;
-            color: #6f496b;
+            color: var(--moon-dust);
             font-size: 1rem;
         }
         .status.success {
-            color: #7fff00;
+            color: var(--success);
         }
         .status.error {
-            color: #ff8c00;
+            color: var(--danger);
         }
         .score {
             font-size: 1.5rem;
             font-weight: 700;
             margin-top: 10px;
-            color: #5a315a;
+            color: var(--moon-glow);
+            text-shadow: 0 0 14px rgba(246, 241, 213, 0.25);
+        }
+        .stat-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .stat-pill {
+            background: rgba(12, 23, 58, 0.85);
+            border: 1px solid rgba(137, 200, 255, 0.4);
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--moon-dust);
+        }
+        .stat-pill span {
+            color: var(--moon-glow);
+        }
+        @keyframes drift {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(8px); }
+            100% { transform: translateY(0px); }
         }
         @media (max-width: 640px) {
+            body::after {
+                width: 140px;
+                height: 140px;
+                top: 6%;
+                right: 6%;
+            }
             .problem {
                 font-size: 2rem;
             }
@@ -157,17 +247,21 @@
     <div class="page">
         <div class="card">
             <div class="top-bar">
-                <div class="hint">Solve as many math problems as you can in 60 seconds!</div>
+                <div class="hint">Solve moon-math missions before your oxygen runs out!</div>
                 <div class="timer" id="timer">60</div>
             </div>
-            <h1>Round 3: Math Sprint</h1>
-            <p>Answer simple addition, subtraction, multiplication, and division problems.</p>
+            <h1>Round 3: Lunar Math Sprint</h1>
+            <p>Navigate space equations with addition, subtraction, multiplication, and division.</p>
             <div class="problem" id="problem">Ready?</div>
             <input type="number" class="answer-input" id="answerInput" placeholder="Your answer" style="display: none;">
             <div class="button-row">
                 <button class="action-button" id="submitButton" style="display: none;">Submit Answer</button>
             </div>
             <div class="score" id="score">Score: 0</div>
+            <div class="stat-bar">
+                <div class="stat-pill">🔥 Streak: <span id="streakDisplay">0</span></div>
+                <div class="stat-pill">🚀 Level: <span id="levelDisplay">0</span></div>
+            </div>
             <div class="status" id="statusText">Get ready...</div>
         </div>
     </div>
@@ -178,6 +272,8 @@
         const scoreEl = document.getElementById('score');
         const statusText = document.getElementById('statusText');
         const timerEl = document.getElementById('timer');
+        const streakDisplay = document.getElementById('streakDisplay');
+        const levelDisplay = document.getElementById('levelDisplay');
 
         let score = 0;
         let timeLeft = 60;
@@ -248,6 +344,8 @@
             difficultyLevel = 0;
             correctStreak = 0;
             scoreEl.textContent = `Score: ${score}`;
+            streakDisplay.textContent = 0;
+            levelDisplay.textContent = 0;
             timerEl.textContent = timeLeft;
             statusText.textContent = '';
             submitButton.style.display = 'inline-block';
@@ -281,18 +379,22 @@
                 correctStreak += 1;
                 if (correctStreak % 4 === 0) {
                     difficultyLevel += 1;
-                    statusText.textContent = `Correct! Level up: ${difficultyLevel}`;
+                    statusText.textContent = `Correct! Level up!`;
                 } else {
                     statusText.textContent = 'Correct!';
                 }
                 scoreEl.textContent = `Score: ${score}`;
+                streakDisplay.textContent = correctStreak;
+                levelDisplay.textContent = difficultyLevel;
                 statusText.className = 'status success';
             } else {
                 correctStreak = 0;
                 difficultyLevel = Math.max(0, difficultyLevel - 1);
                 timeLeft = Math.max(0, timeLeft - 5);
                 timerEl.textContent = timeLeft;
-                statusText.textContent = `Wrong! Answer was ${currentProblem.answer}. Level: ${difficultyLevel}`;
+                streakDisplay.textContent = 0;
+                levelDisplay.textContent = difficultyLevel;
+                statusText.textContent = `Wrong! Answer was ${currentProblem.answer}.`;
                 statusText.className = 'status error';
             }
             setTimeout(() => {

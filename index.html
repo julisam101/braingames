@@ -20,19 +20,24 @@
             transition: background-color 1s ease, color 1s ease;
         }
         h1 {
-            font-size: 3em;
-            margin-bottom: 50px;
+            font-size: clamp(1.6rem, 5vw, 3rem);
+            margin-bottom: clamp(24px, 5vh, 50px);
+            text-align: center;
+            padding: 0 12px;
         }
         .box {
             position: absolute;
-            width: 300px;
-            height: 150px;
+            width: min(300px, calc(100vw - 24px));
+            min-height: 110px;
+            height: auto;
             border: 2px solid black;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: background-color 0.2s, transform 0.2s;
+            padding: 12px;
+            box-sizing: border-box;
         }
         .box:hover {
             background-color: #f0f0f0;
@@ -72,8 +77,10 @@
         let lastMoreMoveAt = 0;
         boxes.forEach(box => {
             // Set initial random position for each box
-            const x = Math.random() * (window.innerWidth - 300);
-            const y = Math.random() * (window.innerHeight - 150);
+            const bW = box.offsetWidth;
+            const bH = box.offsetHeight;
+            const x = Math.random() * Math.max(0, window.innerWidth - bW);
+            const y = Math.random() * Math.max(0, window.innerHeight - bH);
             box.style.left = `${x}px`;
             box.style.top = `${y}px`;
             
@@ -91,18 +98,29 @@
                     const currentY = parseFloat(box.style.top) || 0;
                     const nudgeX = (Math.random() - 0.5) * 180;
                     const nudgeY = (Math.random() - 0.5) * 120;
-                    const maxX = window.innerWidth - 300;
-                    const maxY = window.innerHeight - 150;
+                    const maxX = Math.max(0, window.innerWidth - box.offsetWidth);
+                    const maxY = Math.max(0, window.innerHeight - box.offsetHeight);
 
                     box.style.left = `${Math.max(0, Math.min(maxX, currentX + nudgeX))}px`;
                     box.style.top  = `${Math.max(0, Math.min(maxY, currentY + nudgeY))}px`;
                     return;
                 }
 
-                const newX = Math.random() * (window.innerWidth - 300);
-                const newY = Math.random() * (window.innerHeight - 150);
+                const newX = Math.random() * Math.max(0, window.innerWidth - box.offsetWidth);
+                const newY = Math.random() * Math.max(0, window.innerHeight - box.offsetHeight);
                 box.style.left = `${newX}px`;
                 box.style.top = `${newY}px`;
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            boxes.forEach(b => {
+                const bw = b.offsetWidth;
+                const bh = b.offsetHeight;
+                const cx = parseFloat(b.style.left) || 0;
+                const cy = parseFloat(b.style.top) || 0;
+                b.style.left = `${Math.max(0, Math.min(window.innerWidth - bw, cx))}px`;
+                b.style.top = `${Math.max(0, Math.min(window.innerHeight - bh, cy))}px`;
             });
         });
 

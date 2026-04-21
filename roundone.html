@@ -35,7 +35,7 @@
         h1 {
             margin: 0 0 18px;
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 3.4rem;
+            font-size: clamp(1.8rem, 5vw, 3.4rem);
             letter-spacing: 0.08em;
             color: #f6cf63;
             text-shadow: 0 0 14px rgba(245, 197, 80, 0.35);
@@ -214,6 +214,32 @@
             to {
                 transform: translate3d(0, 120vh, 0) rotate(720deg);
                 opacity: 0;
+            }
+        }
+        @media (max-width: 520px) {
+            .score-tracker {
+                position: static;
+                display: inline-block;
+                margin: 0 0 14px;
+                font-size: 1.3rem;
+                padding: 8px 14px;
+            }
+            .container {
+                padding: 16px;
+            }
+            .question-card {
+                padding: 16px;
+                min-height: auto;
+            }
+            .question-text {
+                font-size: 1.05rem;
+            }
+            .actions {
+                flex-wrap: wrap;
+            }
+            .actions button {
+                flex: 1 1 auto;
+                min-width: 110px;
             }
         }
     </style>
