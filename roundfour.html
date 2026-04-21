@@ -97,32 +97,74 @@
         .intro-panel {
             margin: 16px auto 6px;
             max-width: 560px;
-            padding: 22px;
-            border: 2px solid rgba(147, 112, 219, 0.45);
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.7);
+            padding: 28px 24px;
+            border: 3px solid rgba(221, 160, 221, 0.7);
+            border-radius: 20px;
+            background: linear-gradient(155deg, rgba(58, 12, 88, 0.92) 0%, rgba(30, 8, 60, 0.95) 100%);
+            box-shadow: 0 0 40px rgba(147, 112, 219, 0.35), inset 0 0 0 1px rgba(221, 160, 221, 0.2);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        .intro-panel::before {
+            content: '';
+            position: absolute;
+            inset: 10px;
+            border: 1.5px dashed rgba(221, 160, 221, 0.35);
+            border-radius: 12px;
+            pointer-events: none;
+        }
+        .intro-banner {
+            display: inline-block;
+            background: linear-gradient(135deg, #dda0dd 0%, #9370db 100%);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            padding: 5px 16px;
+            border-radius: 999px;
+            margin-bottom: 14px;
         }
         .intro-title {
-            margin: 0 0 10px;
-            font-size: clamp(2rem, 4vw, 2.8rem);
-            color: #6a3ea1;
+            margin: 0 0 6px;
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            color: #f0e6ff;
             letter-spacing: 0.08em;
             text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(221, 160, 221, 0.6);
+        }
+        .intro-characters {
+            font-size: clamp(1.4rem, 4vw, 2rem);
+            letter-spacing: 0.12em;
+            margin: 12px 0 14px;
+            filter: drop-shadow(0 0 6px rgba(221,160,221,0.5));
+        }
+        .intro-desc {
+            margin: 0 0 22px;
+            color: #d4b8f5;
+            font-size: 0.97rem;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
         }
         .start-button {
             display: inline-block;
             margin: 8px auto 0;
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #9370db 0%, #8b4513 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #dda0dd 0%, #9370db 100%);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 14px;
             font-family: 'Cinzel', serif;
             font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 10px rgba(147, 112, 219, 0.35);
+            box-shadow: 0 6px 18px rgba(147, 112, 219, 0.5);
+            letter-spacing: 0.06em;
+            position: relative;
+            z-index: 1;
         }
         .start-button:hover {
             transform: translateY(-2px);
@@ -183,9 +225,11 @@
             <h1>Round Four</h1>
 
             <div class="intro-panel" id="introPanel">
-                <h2 class="intro-title">Memory Game</h2>
-                <p>Match every pair to clear the board. Every 2 wrong matches adds a new pair.</p>
-                <button class="start-button" id="startButton">Start</button>
+                <div class="intro-banner">Round Four &mdash; Brain Games</div>
+                <h2 class="intro-title">Down the Rabbit Hole</h2>
+                <div class="intro-characters">👧 🐰 🎩 😼 🃏 🍄 ☕ 👸</div>
+                <p class="intro-desc">Curiouser and curiouser! Match every Wonderland pair to clear the board. But beware — every 2 wrong turns summons a new character from the other side of the looking glass.</p>
+                <button class="start-button" id="startButton">Fall Down the Rabbit Hole</button>
             </div>
 
             <div class="game-shell" id="gameShell">
