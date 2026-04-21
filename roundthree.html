@@ -184,12 +184,19 @@
         let timerId;
         let currentProblem = null;
         let countdownStarted = false;
+        let difficultyLevel = 0;
+        let correctStreak = 0;
 
         function generateProblem() {
-            const difficulty = Math.floor(score / 5);
-            const maxNum = 10 + difficulty * 10; // Starts at 10, increases by 10 every 5 correct
-            const operations = ['+', '-', '*', '/'];
-            const op = operations[Math.floor(Math.random() * operations.length)];
+            const maxNum = 10 + difficultyLevel * 8;
+            // Unlock tougher operations as the player levels up.
+            const operationsByLevel = [
+                ['+', '-'],
+                ['+', '-', '*'],
+                ['+', '-', '*', '/']
+            ];
+            const opPool = operationsByLevel[Math.min(difficultyLevel, operationsByLevel.length - 1)];
+            const op = opPool[Math.floor(Math.random() * opPool.length)];
             let a, b;
 
             switch (op) {
@@ -227,17 +234,19 @@
             
             setTimeout(() => {
                 problemEl.textContent = 'Set...';
-            }, 3000);
+            }, 1500);
             
             setTimeout(() => {
                 problemEl.textContent = 'Go!';
                 startGame();
-            }, 6000);
+            }, 3000);
         }
 
         function startGame() {
             score = 0;
             timeLeft = 60;
+            difficultyLevel = 0;
+            correctStreak = 0;
             scoreEl.textContent = `Score: ${score}`;
             timerEl.textContent = timeLeft;
             statusText.textContent = '';
@@ -269,13 +278,21 @@
             const userAnswer = parseFloat(answerInput.value);
             if (userAnswer === currentProblem.answer) {
                 score += 1;
+                correctStreak += 1;
+                if (correctStreak % 4 === 0) {
+                    difficultyLevel += 1;
+                    statusText.textContent = `Correct! Level up: ${difficultyLevel}`;
+                } else {
+                    statusText.textContent = 'Correct!';
+                }
                 scoreEl.textContent = `Score: ${score}`;
-                statusText.textContent = 'Correct!';
                 statusText.className = 'status success';
             } else {
+                correctStreak = 0;
+                difficultyLevel = Math.max(0, difficultyLevel - 1);
                 timeLeft = Math.max(0, timeLeft - 5);
                 timerEl.textContent = timeLeft;
-                statusText.textContent = `Wrong! Answer was ${currentProblem.answer}`;
+                statusText.textContent = `Wrong! Answer was ${currentProblem.answer}. Level: ${difficultyLevel}`;
                 statusText.className = 'status error';
             }
             setTimeout(() => {
